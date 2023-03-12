@@ -1,0 +1,1 @@
+# GenshinArtifacter.js
