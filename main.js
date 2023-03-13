@@ -43,7 +43,7 @@ let data_json = '';
 function load_data ( uid ) {
   var xhr = new XMLHttpRequest();
   var url = 'https://enka.network/api/uid/' + uid;
-  //var url = './851415193.json';
+  //var url = './testdata/851415193.json';
   xhr.responseType = "text"
   xhr.open('GET', url , true);
   xhr.onload = function () {
@@ -63,7 +63,7 @@ let store_json = {};
 function load_store_json ( fname ) {
   var xhr = new XMLHttpRequest();
   var url = 'https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/' + fname;
-  //var url = fname;
+  //var url = './testdata/' + fname;
   xhr.responseType = "text"
   xhr.open('GET', url , true);
   xhr.onload = function () {
@@ -75,6 +75,29 @@ function load_store_json ( fname ) {
     }
   }
   xhr.send();
+}
+
+let units = {
+  "FIGHT_PROP_BASE_ATTACK":'',
+  "FIGHT_PROP_HP":'',
+  "FIGHT_PROP_ATTACK":'',
+  "FIGHT_PROP_DEFENSE":'',
+  "FIGHT_PROP_HP_PERCENT":'%',
+  "FIGHT_PROP_ATTACK_PERCENT":'%',
+  "FIGHT_PROP_DEFENSE_PERCENT":'%',
+  "FIGHT_PROP_CRITICAL":'%',
+  "FIGHT_PROP_CRITICAL_HURT":'%',
+  "FIGHT_PROP_CHARGE_EFFICIENCY":'%',
+  "FIGHT_PROP_HEAL_ADD":'%',
+  "FIGHT_PROP_ELEMENT_MASTERY":'',
+  "FIGHT_PROP_PHYSICAL_ADD_HURT":'%',
+  "FIGHT_PROP_FIRE_ADD_HURT":'%',
+  "FIGHT_PROP_ELEC_ADD_HURT":'%',
+  "FIGHT_PROP_WATER_ADD_HURT":'%',
+  "FIGHT_PROP_WIND_ADD_HURT":'%',
+  "FIGHT_PROP_ICE_ADD_HURT":'%',
+  "FIGHT_PROP_ROCK_ADD_HURT":'%',
+  "FIGHT_PROP_GRASS_ADD_HURT":'%',
 }
 
 let loc_appendix = {
@@ -192,7 +215,7 @@ function roundScore ( score ) {
 let timeout_counter=5;
 let timeout_ms = 1500;
 let build_card = {};
-function parse_data ( data ) {
+async function parse_data ( data ) {
   let lang = 'ja';
   if ( !(store_json['characters.json'] && store_json['loc.json']) ) {
     if ( --timeout_counter !== 0 ) setTimeout(parse_data,timeout_ms,data);
@@ -200,7 +223,6 @@ function parse_data ( data ) {
   }
   let characters = store_json['characters.json'];
   let loc = store_json['loc.json'];
-  console.log(characters);
   if ( !(loc[lang] && loc_appendix[lang] ) ) {
     console.log('[INFO] lang:' + lang + ' is not supported.');
     return;
@@ -214,13 +236,14 @@ function parse_data ( data ) {
     console.log(charName);
     build_card[charName] = { "prop" : {}, "totalScore" : 0, "セット効果":{} };
     // parse char data
-    //   TODO parse skillMap
+    //   parse skillMap
     build_card[charName]["天賦"] = {};
-    build_card[charName]["天賦"]["通常"]   = avatarInfo.skillLevelMap[characters[id].SkillOrder[0]];
-    build_card[charName]["天賦"]["スキル"] = avatarInfo.skillLevelMap[characters[id].SkillOrder[1]];
-    build_card[charName]["天賦"]["爆発"]   = avatarInfo.skillLevelMap[characters[id].SkillOrder[2]];
+    build_card[charName]["天賦"]["通常"]   = 'Lv.' + avatarInfo.skillLevelMap[characters[id].SkillOrder[0]];
+    build_card[charName]["天賦"]["スキル"] = 'Lv.' + avatarInfo.skillLevelMap[characters[id].SkillOrder[1]];
+    build_card[charName]["天賦"]["爆発"]   = 'Lv.' + avatarInfo.skillLevelMap[characters[id].SkillOrder[2]];
     //   TODO parse Prop
-    build_card[charName]["レベル"] = avatarInfo.propMap[4001].val;
+    build_card[charName]["レベル"] = 'Lv.' + avatarInfo.propMap[4001].val;
+    build_card[charName]["好感度"] = avatarInfo.fetterInfo.expLevel;
     // parse fight properties
     //   parse HP
     var MaxHP   = Math.floor( avatarInfo.fightPropMap[2000] + 0.5 );
@@ -273,16 +296,16 @@ function parse_data ( data ) {
         build_card[charName][typeName] = {"部位" : typeName, "名前":equipName, "メイン":[],"サブ":[],"Score":0};
         mainop = equip.flat['reliquaryMainstat'];
         var propname = loc_appendix[lang][mainop.mainPropId];
-        var propval  = mainop.statValue;
+        var propval  = mainop.statValue + units[mainop.mainPropId];
         build_card[charName][typeName]["メイン"] = [ propname , propval ];
         for ( var subop of equip.flat['reliquarySubstats'] ) {
           var propname = loc_appendix[lang][subop.appendPropId];
-          var propval  = subop.statValue;
+          var propval  = subop.statValue + units[subop.appendPropId];
           build_card[charName][typeName]["サブ"].push( [ propname , propval ] );
           switch ( subop.appendPropId ) {
-            case 'FIGHT_PROP_ATTACK_PERCENT' : score += propval;   break;
-            case 'FIGHT_PROP_CRITICAL'       : score += propval*2; break;
-            case 'FIGHT_PROP_CRITICAL_HURT'  : score += propval;   break;
+            case 'FIGHT_PROP_ATTACK_PERCENT' : score += subop.statValue;   break;
+            case 'FIGHT_PROP_CRITICAL'       : score += subop.statValue*2; break;
+            case 'FIGHT_PROP_CRITICAL_HURT'  : score += subop.statValue;   break;
           }
         }
         build_card[charName][typeName].Score = roundScore(score);
@@ -295,7 +318,7 @@ function parse_data ( data ) {
         affixRank = affixMap[Object.keys(affixMap)[0]] + 1;
         build_card[charName]["武器"] = { 
           "名前" : equipName,
-          "レベル" : equip.weapon.level,
+          "レベル" : 'Lv.' + equip.weapon.level,
           "精錬ランク" : affixRank,
         };
         for ( var wStats of equip.flat.weaponStats ) {
@@ -309,205 +332,265 @@ function parse_data ( data ) {
     build_card[charName].totalScore = roundScore(totalScore);
   }
   for ( var key in build_card ) {
-    document.getElementById('main').appendChild(build_card_table(key));
+    var cvs = await create_build_card_canvas(key);
+    document.getElementById('main').appendChild(cvs);
+    document.getElementById('main').appendChild(document.createElement('hr'));
   }
 }
 
-function create_td_from_text ( text ) {
-  var td = document.createElement('td');
-  td.appendChild(document.createTextNode(text));
-  return td;
+function fillRoundRect(x, y, w, h, r) {
+    this.beginPath();
+    this.moveTo(x + r, y);
+    this.lineTo(x + w - r, y);
+    this.arc(x + w - r, y + r, r, Math.PI * (3/2), 0, false);
+    this.lineTo(x + w, y + h - r);
+    this.arc(x + w - r, y + h - r, r, 0, Math.PI * (1/2), false);
+    this.lineTo(x + r, y + h);       
+    this.arc(x + r, y + h - r, r, Math.PI * (1/2), Math.PI, false);
+    this.lineTo(x, y + r);
+    this.arc(x + r, y + r, r, Math.PI, Math.PI * (3/2), false);
+    this.closePath();
+    this.fill();
 }
 
-function create_single_artifact_table ( artifact ) {
-  var table = document.createElement('table');
-  var tr = document.createElement('tr');
-  tr.appendChild(create_td_from_text(artifact["部位"]));
-  tr.appendChild(create_td_from_text(artifact["名前"]));
-  table.appendChild(tr);
-  var tr = document.createElement('tr');
-  tr.appendChild(create_td_from_text('【' + artifact["メイン"][0] + '】' ));
-  tr.appendChild(create_td_from_text(artifact["メイン"][1]));
-  table.appendChild(tr);
-  for ( var subs of artifact["サブ"] ) {
-    var tr = document.createElement('tr');
-    tr.appendChild(create_td_from_text(subs[0]));
-    tr.appendChild(create_td_from_text(subs[1]));
-    table.appendChild(tr);
+function create_single_artifact_canvas ( artifacts ) {
+  let canvas = document.createElement('canvas');
+  canvas.width  = 360;
+  canvas.height = 415;
+  canvas.style["width"]  = canvas.width;
+  canvas.style["height"] = canvas.height;
+  var context = canvas.getContext('2d');
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [ 0, 0, 0, 0.1] + ')';
+  context.fillRoundRect = fillRoundRect;
+  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillStyle = fillStyleOrg;
+
+  context.font = '100px serif';
+  context.textAlign = 'left';
+  context.fillText(artifacts["部位"],0,100)
+  context.font = '16px serif';
+  context.fillText(artifacts["名前"],0,130)
+
+  context.font = '30px serif';
+  context.textAlign = 'right';
+  context.fillText(artifacts["メイン"][0],canvas.width-15,45);
+  context.font = '40px serif';
+  context.fillText(artifacts["メイン"][1],canvas.width-15,85);
+
+  context.font = '25px serif';
+  for ( var i=0; i< artifacts["サブ"].length; ++i )  {
+    var sub = artifacts["サブ"][i];
+    context.textAlign = 'left';
+    context.fillText(sub[0],50,195+50*i);
+    context.textAlign = 'right';
+    context.fillText(sub[1],canvas.width-15,195+50*i);
   }
-  var tr = document.createElement('tr');
-  tr.appendChild(create_td_from_text('Score'));
-  tr.appendChild(create_td_from_text(artifact["Score"]));
-  table.appendChild(tr);
-  return table;
+
+  context.font = '25px serif';
+  context.textAlign = 'right';
+  context.fillText('Score', canvas.width-90, canvas.height-10);
+  context.font = '35px serif';
+  context.fillText(artifacts["Score"], canvas.width-15, canvas.height-10);
+
+  return canvas;
 }
 
-function create_single_artifactSet_table ( artifactSet ) {
-  var table = document.createElement('table');
+function create_weapon_canvas ( weapon ) {
+  const keyHash = { "名前" : true, "レベル": true, "精錬ランク": true, "基礎攻撃力" : true, };
+  let canvas = document.createElement('canvas');
+  canvas.width  = 465;
+  canvas.height = 180;
+  canvas.style["width"]  = canvas.width;
+  canvas.style["height"] = canvas.height;
+  var context = canvas.getContext('2d');
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [ 0, 0, 0, 0.1] + ')';
+  context.fillRoundRect = fillRoundRect;
+  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillStyle = fillStyleOrg;
+
+  context.font = '25px serif';
+  context.fillText('精錬ランク' + weapon["精錬ランク"],10,35)
+
+  context.font = '30px serif';
+  context.textAlign = 'left';
+  context.fillText(weapon["名前"],160,50)
+  context.fillText(weapon["レベル"],160,80)
+
+  context.font = '25px serif';
+  context.fillText('基礎攻撃力 ' + weapon["基礎攻撃力"],200,110)
+  var i=0;
+  for ( key in weapon ) {
+    if ( keyHash[key] ) continue;
+    context.fillText(key + ' ' + weapon[key],200,135+i*25)
+    i++;
+  }
+  return canvas;
+}
+
+function create_prop_canvas ( prop ) {
+  let canvas = document.createElement('canvas');
+  canvas.width  = 630;
+  canvas.height = 600;
+  canvas.style["width"]  = canvas.width;
+  canvas.style["height"] = canvas.height;
+  var context = canvas.getContext('2d');
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [ 0, 0, 0, 0.1] + ')';
+  context.fillRoundRect = fillRoundRect;
+  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillStyle = fillStyleOrg;
+
+  var interval = (canvas.height - 25 * Object.keys(prop).length) / ( Object.keys(prop).length + 1) + 25;
+  context.font = '25px serif';
+  var i=1;
+  for ( var key in prop ) {
+    context.textAlign = 'left';
+    context.fillText(key,80, interval*i )
+    context.textAlign = 'right';
+    context.fillText(prop[key],canvas.width-30, interval*i )
+    i++;
+  }
+  return canvas;
+}
+
+function create_character_canvas(charName) {
+  let canvas = document.createElement('canvas');
+  canvas.width  = 750;
+  canvas.height = 640;
+  canvas.style["width"]  = canvas.width;
+  canvas.style["height"] = canvas.height;
+  var context = canvas.getContext('2d');
+  context.font = '50px serif';
+  context.fillText(charName,30,70)
+  context.font = '25px serif';
+  context.fillText(build_card[charName]["レベル"],30,105)
+  context.fillText("好感度" + build_card[charName]["好感度"],105,105)
+
+  context.font = '25px serif';
+  context.fillText("通常",30,400)
+  context.font = '20px serif';
+  context.fillText(build_card[charName]["天賦"]["通常"],30,425)
+
+  context.font = '25px serif';
+  context.fillText("スキル",30,500)
+  context.font = '20px serif';
+  context.fillText(build_card[charName]["天賦"]["スキル"],30,525)
+
+  context.font = '25px serif';
+  context.fillText("爆発",30,600)
+  context.font = '20px serif';
+  context.fillText(build_card[charName]["天賦"]["爆発"],30,625)
+  return canvas;
+}
+
+function create_artifactset_canvas ( artifactSet ) {
+  let canvas = document.createElement('canvas');
+  canvas.width  = 465;
+  canvas.height = 110;
+  canvas.style["width"]  = canvas.width;
+  canvas.style["height"] = canvas.height;
+  var context = canvas.getContext('2d');
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [ 0, 0, 0, 0.1] + ')';
+  context.fillRoundRect = fillRoundRect;
+  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillStyle = fillStyleOrg;
+
+  var set = {};
   for ( var key in artifactSet ) {
     if ( (artifactSet[key]-0) >= 2 ) {
-      var tr = document.createElement('tr');
-      tr.appendChild(create_td_from_text(key));
-      tr.appendChild(create_td_from_text(artifactSet[key]));
-      table.appendChild(tr);
+      set[key] = artifactSet[key];
     }
   }
-  return table;
-}
-
-function create_single_weapon_table ( weapon ) {
-  var keyHash = { "名前" : true, "レベル": true, "精錬ランク": true, "基礎攻撃力" : true, };
-  var table = document.createElement('table');
-  var tr = document.createElement('tr');
-  tr.appendChild(create_td_from_text("武器"));
-  tr.appendChild(create_td_from_text(weapon["名前"]));
-  table.appendChild(tr);
-  for ( var key of ["レベル", "精錬ランク", "基礎攻撃力"] ) {
-    var tr = document.createElement('tr');
-    tr.appendChild(create_td_from_text(key));
-    tr.appendChild(create_td_from_text(weapon[key]));
-    table.appendChild(tr);
+  var interval = (canvas.height - 25 * Object.keys(set).length) / ( Object.keys(set).length + 1) + 25;
+  context.font = '25px serif';
+  var i=1;
+  for ( var key in set ) {
+    context.textAlign = 'left';
+    context.fillText(key,110, interval*i )
+    context.textAlign = 'right';
+    context.fillText(set[key],canvas.width-30, interval*i )
+    i++;
   }
-  for ( var key in weapon ) {
-    if ( keyHash[key] ) continue;
-    var tr = document.createElement('tr');
-    tr.appendChild(create_td_from_text(key));
-    tr.appendChild(create_td_from_text(weapon[key]));
-    table.appendChild(tr);
+  return canvas;
+}
+
+function create_totalScore_canvas ( totalScore ) {
+  let canvas = document.createElement('canvas');
+  canvas.width  = 465;
+  canvas.height = 290;
+  canvas.style["width"]  = canvas.width;
+  canvas.style["height"] = canvas.height;
+  var context = canvas.getContext('2d');
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [ 0, 0, 0, 0.1] + ')';
+  context.fillRoundRect = fillRoundRect;
+  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillStyle = fillStyleOrg;
+
+  context.font = '40px serif';
+  context.textAlign = 'left';
+  context.fillText("総合スコア",10,40)
+  context.font = '70px serif';
+  context.textAlign = 'center';
+  context.fillText(totalScore,canvas.width/2,canvas.height/2+35);
+  context.font = '30px serif';
+  context.textAlign = 'right';
+  context.fillText('攻撃換算',canvas.width-15,canvas.height-15);
+  return canvas;
+}
+
+function getImageFromCanvas ( canvas ) {
+  return new Promise ( ( resolve, reject ) => {
+    const image = new Image();
+    const context = canvas.getContext('2d');
+    image.onload  = () => resolve(image);
+    image.onerror = (e) => reject(e);
+    image.src = context.canvas.toDataURL();
+  });
+}
+
+async function create_build_card_canvas ( charName ) {
+  let canvas = document.createElement('canvas');
+  canvas.id = charName;
+  canvas.onclick = (e) => {
+    let link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = charName + '.png';
+    link.click();
   }
-  table.appendChild(tr);
-  return table;
-}
+  canvas.width  = 1920;
+  canvas.height = 1080;
+  canvas.style["width"]  = canvas.width;
+  canvas.style["height"] = canvas.height;
+  var context = canvas.getContext('2d');
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [ 228, 228, 255, 1] + ')';
+  context.fillRoundRect = fillRoundRect;
+  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillStyle = fillStyleOrg;
 
-function create_single_prop_table ( prop ) {
-  var table = document.createElement('table');
-  var tr = document.createElement('tr');
-  for ( var key in prop ) {
-    var tr = document.createElement('tr');
-    tr.appendChild(create_td_from_text(key));
-    tr.appendChild(create_td_from_text(prop[key]));
-    table.appendChild(tr);
+  var img = await getImageFromCanvas(create_character_canvas(charName));
+  context.drawImage(img,0,0);
+  var img = await getImageFromCanvas(create_prop_canvas(build_card[charName].prop));
+  context.drawImage(img,760,30);
+  var img = await getImageFromCanvas(create_weapon_canvas(build_card[charName]["武器"]));
+  context.drawImage(img,1420,30);
+  var img = await getImageFromCanvas(create_artifactset_canvas(build_card[charName]["セット効果"]));
+  context.drawImage(img,1420,220);
+  var img = await getImageFromCanvas(create_totalScore_canvas(build_card[charName].totalScore));
+  context.drawImage(img,1420,340);
+  var equipTypeList = ["花", "羽", "時計","杯","冠"] ;
+  var interval = ( canvas.width - 360 * equipTypeList.length -70 ) / ( equipTypeList.length - 1 ) + 360;
+  for ( var i=0; i<equipTypeList.length; ++i ) {
+    var img = await getImageFromCanvas(create_single_artifact_canvas(build_card[charName][equipTypeList[i]]));
+    context.drawImage(img,30+interval*i,645);
   }
-  table.appendChild(tr);
-  return table;
+  return canvas;
 }
 
-function create_all_artifacts_table ( charName ) {
-  var table = document.createElement('table');
-  table.setAttribute('border',1);
-  table.style['border-collapse'] = 'collapse';
-  var tr = document.createElement('tr');
-  for ( var equipType of ["花", "羽", "時計","杯","冠"] ) {
-    var td = document.createElement('td');
-    td.appendChild(create_single_artifact_table(build_card[charName][equipType]));
-    tr.appendChild(td);
-  }
-  table.appendChild(tr);
-  return table;
-}
-
-function create_skillLevel_table ( skill ) {
-  var table = document.createElement('table');
-  table.setAttribute('border',1);
-  table.style['border-collapse'] = 'collapse';
-  for ( var key of [ '通常', 'スキル', '爆発'] ) {
-    var tr = document.createElement('tr');
-    tr.appendChild(create_td_from_text(key));
-    tr.appendChild(create_td_from_text(skill[key]));
-    table.appendChild(tr);
-  }
-  return table;
-}
-
-function create_character_table ( charName ) {
-  var table = document.createElement('table');
-  table.setAttribute('border',1);
-  table.style['border-collapse'] = 'collapse';
-  var tr = document.createElement('tr');
-  var td = document.createElement('td');
-  td.appendChild(document.createTextNode(charName));
-  td.setAttribute('colspan','2')
-  tr.appendChild(td);
-  table.appendChild(tr);
-  var tr = document.createElement('tr');
-  tr.appendChild(create_td_from_text('レベル'));
-  tr.appendChild(create_td_from_text(build_card[charName]['レベル']));
-  table.appendChild(tr);
-  var tr = document.createElement('tr');
-  tr.appendChild(create_td_from_text('天賦'));
-  var td = document.createElement('td');
-  td.appendChild(create_skillLevel_table(build_card[charName]['天賦']));
-  tr.appendChild(td);
-  table.appendChild(tr);
-  return table;
-}
-
-function create_totalScore_table ( totalScore ) {
-  var table = document.createElement('table');
-  var tr = document.createElement('tr');
-  tr.appendChild(create_td_from_text('総合スコア'));
-  tr.appendChild(create_td_from_text(totalScore));
-  table.appendChild(tr);
-  return table;
-}
-
-function build_card_table ( charName ) {
-  var table = document.createElement('table');
-  table.setAttribute('border',1);
-  table.style['border-collapse'] = 'collapse';
-  var subTable = document.createElement('table');
-  //subTable.setAttribute('border',1);
-  //subTable.style['border-collapse'] = 'collapse';
-  { 
-    var tr_bkp = tr;
-    var tr = document.createElement('tr');
-    var td = document.createElement('td');
-    td.appendChild(create_character_table(charName));
-    tr.appendChild(td);
-    var td = document.createElement('td');
-    td.appendChild(create_single_prop_table(build_card[charName].prop));
-    tr.appendChild(td);
-    var subsubTable = document.createElement('table');
-    subsubTable.setAttribute('border',1);
-    subsubTable.style['border-collapse'] = 'collapse';
-    {
-      var tr_bkp = tr;
-      var tr = document.createElement('tr');
-      var td = document.createElement('td');
-      td.appendChild(create_single_weapon_table(build_card[charName]["武器"]));
-      tr.appendChild(td);
-      subsubTable.appendChild(tr);
-      var tr = document.createElement('tr');
-      var td = document.createElement('td');
-      td.appendChild(create_single_artifactSet_table(build_card[charName]["セット効果"]));
-      tr.appendChild(td);
-      subsubTable.appendChild(tr);
-      var tr = document.createElement('tr');
-      var td = document.createElement('td');
-      td.appendChild(create_totalScore_table(build_card[charName].totalScore));
-      tr.appendChild(td);
-      subsubTable.appendChild(tr);
-      tr = tr_bkp;
-    }
-    var td = document.createElement('td');
-    td.appendChild(subsubTable);
-    tr.appendChild(td);
-    subTable.appendChild(tr);
-    tr = tr_bkp;
-  }
-  var tr = document.createElement('tr');
-  var td = document.createElement('td');
-  td.appendChild(subTable);
-  tr.appendChild(td);
-  table.appendChild(tr);
-
-  var tr = document.createElement('tr');
-  var td = document.createElement('td');
-  td.appendChild(create_all_artifacts_table(charName));
-  tr.appendChild(td);
-  table.appendChild(tr);
-  return table;
-}
 
 //let uid = '851415193';
 function onload_function () {
