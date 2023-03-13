@@ -42,16 +42,17 @@ function copy_url () {
 let data_json = '';
 function load_data ( uid ) {
   var xhr = new XMLHttpRequest();
-  var url = 'https://enka.network/api/uid/' + uid;
-  //var url = './testdata/851415193.json';
+  //var url = 'https://enka.network/api/uid/' + uid;
+  var url = './testdata/851415193.json';
   xhr.responseType = "text"
   xhr.open('GET', url , true);
-  xhr.onload = function () {
+  xhr.onload = async function () {
     data_json = JSON.parse(xhr.responseText);
     if ( xhr.status == '200' ) {
       console.log('[INFO]'+' Success loading data.' + xhr.status);
       console.log(data_json);
-      parse_data(data_json);
+      await parse_data(data_json);
+      print_build_card();
     } else {
       console.log('[INFO]'+ 'Failure loading data.' + xhr.status);
     }
@@ -62,8 +63,8 @@ function load_data ( uid ) {
 let store_json = {};
 function load_store_json ( fname ) {
   var xhr = new XMLHttpRequest();
-  var url = 'https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/' + fname;
-  //var url = './testdata/' + fname;
+  //var url = 'https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/' + fname;
+  var url = './testdata/' + fname;
   xhr.responseType = "text"
   xhr.open('GET', url , true);
   xhr.onload = function () {
@@ -212,6 +213,36 @@ function roundScore ( score ) {
   return Math.floor(score * 10 + 0.5) / 10;
 }
 
+const calcByList = ['攻撃換算', 'HP換算', '防御換算'];
+function create_calcBySelectList ( charName ){
+  let select = document.createElement('select');
+  select.id   = charName + '-calcBy';
+  select.name = charName + '-calcBy';
+  for ( var val of calcByList ) {
+    var option = document.createElement('option');
+    option.value     = val;
+    option.innerHTML = val;
+    select.appendChild(option);
+  }
+  if ( calcByHash[charName] ) {
+    for ( var i=0; i<select.options.length; ++i ) {
+      if ( select.options[i].value != calcByHash[charName] ) continue;
+      select.options[i].selected = true;
+      break;
+    }
+  } else {
+    select.options[0].selected = true;
+  }
+  select.onchange = print_build_card;
+  return select;
+}
+
+function setUid () {
+  _GET['uid'] = document.getElementById('uid').value;
+  get2url ();
+  load_data(_GET['uid']);
+}
+
 let timeout_counter=5;
 let timeout_ms = 1500;
 let build_card = {};
@@ -219,6 +250,7 @@ async function parse_data ( data ) {
   let lang = 'ja';
   if ( !(store_json['characters.json'] && store_json['loc.json']) ) {
     if ( --timeout_counter !== 0 ) setTimeout(parse_data,timeout_ms,data);
+    console.log("timeout_counter = " + timeout_counter );
     return;
   }
   let characters = store_json['characters.json'];
@@ -233,8 +265,10 @@ async function parse_data ( data ) {
   for ( var avatarInfo of avatarInfoList ) {
     var id = avatarInfo.avatarId;
     var charName = loc[lang][characters[id].NameTextMapHash];
-    console.log(charName);
-    build_card[charName] = { "prop" : {}, "totalScore" : 0, "セット効果":{} };
+    build_card[charName] = { "prop" : {}, "totalScore" : {}, "セット効果":{} };
+    for ( var val of calcByList ) {
+      build_card[charName].totalScore[val] = 0;
+    }
     // parse char data
     //   parse skillMap
     build_card[charName]["天賦"] = {};
@@ -287,13 +321,18 @@ async function parse_data ( data ) {
       var name = '';
       if ( equip['reliquary'] ) {
         // if equip is an artifact
-        var score = 0;
-        score = 0;
+        var score = { "common" : 0};
+        for ( var val of calcByList ) {
+          score[val] = 0;
+        }
         equipName = loc[lang][equip.flat.setNameTextMapHash];
         if ( !build_card[charName]['セット効果'][equipName] ) build_card[charName]['セット効果'][equipName] = 0;
         build_card[charName]['セット効果'][equipName]++;
         typeName = loc_appendix[lang][equip.flat.equipType];
-        build_card[charName][typeName] = {"部位" : typeName, "名前":equipName, "メイン":[],"サブ":[],"Score":0};
+        build_card[charName][typeName] = {"部位" : typeName, "名前":equipName, "メイン":[],"サブ":[],"Score":{}};
+        for ( var val of calcByList ) {
+          build_card[charName][typeName].Score[val] = 0;
+        }
         mainop = equip.flat['reliquaryMainstat'];
         var propname = loc_appendix[lang][mainop.mainPropId];
         var propval  = mainop.statValue + units[mainop.mainPropId];
@@ -303,13 +342,18 @@ async function parse_data ( data ) {
           var propval  = subop.statValue + units[subop.appendPropId];
           build_card[charName][typeName]["サブ"].push( [ propname , propval ] );
           switch ( subop.appendPropId ) {
-            case 'FIGHT_PROP_ATTACK_PERCENT' : score += subop.statValue;   break;
-            case 'FIGHT_PROP_CRITICAL'       : score += subop.statValue*2; break;
-            case 'FIGHT_PROP_CRITICAL_HURT'  : score += subop.statValue;   break;
+            case 'FIGHT_PROP_ATTACK_PERCENT' : score[calcByList[0]] += subop.statValue;   break;
+            case 'FIGHT_PROP_HP_PERCENT'     : score[calcByList[1]] += subop.statValue;   break;
+            case 'FIGHT_PROP_DEFENSE_PERCENT': score[calcByList[2]] += subop.statValue;   break;
+            case 'FIGHT_PROP_CRITICAL'       : score.common         += subop.statValue*2; break;
+            case 'FIGHT_PROP_CRITICAL_HURT'  : score.common         += subop.statValue;   break;
           }
         }
-        build_card[charName][typeName].Score = roundScore(score);
-        build_card[charName].totalScore += score;
+        for ( var val of calcByList ) {
+          score[val] += score.common;
+          build_card[charName][typeName].Score[val] = roundScore(score[val]);
+          build_card[charName].totalScore[val] += score[val];
+        }
       } 
       if (equip['weapon'] ) {
         // if equip is a weapon
@@ -328,10 +372,26 @@ async function parse_data ( data ) {
         }
       }
     }
-    totalScore = build_card[charName].totalScore;
-    build_card[charName].totalScore = roundScore(totalScore);
+    for ( var val of calcByList ) {
+      var totalScore = build_card[charName].totalScore[val];
+      build_card[charName].totalScore[val] = roundScore(totalScore);
+    }
   }
+}
+
+let calcByHash = {};
+
+async function print_build_card () {
   for ( var key in build_card ) {
+    var e = document.getElementById(key+'-calcBy');
+    if ( e ) calcByHash[key] = e.value;
+  }
+  document.getElementById('main').innerHTML = '';
+  for ( var key in build_card ) {
+    document.getElementById('main').appendChild(document.createTextNode(key));
+    document.getElementById('main').appendChild(create_calcBySelectList(key));
+    if ( !calcByHash[key] ) calcByHash[key] = document.getElementById( key + '-calcBy').value;
+    document.getElementById('main').appendChild(document.createElement('hr'));
     var cvs = await create_build_card_canvas(key);
     document.getElementById('main').appendChild(cvs);
     document.getElementById('main').appendChild(document.createElement('hr'));
@@ -353,7 +413,7 @@ function fillRoundRect(x, y, w, h, r) {
     this.fill();
 }
 
-function create_single_artifact_canvas ( artifacts ) {
+function create_single_artifact_canvas ( artifacts, calcBy ) {
   let canvas = document.createElement('canvas');
   canvas.width  = 360;
   canvas.height = 415;
@@ -391,7 +451,7 @@ function create_single_artifact_canvas ( artifacts ) {
   context.textAlign = 'right';
   context.fillText('Score', canvas.width-90, canvas.height-10);
   context.font = '35px serif';
-  context.fillText(artifacts["Score"], canvas.width-15, canvas.height-10);
+  context.fillText(artifacts["Score"][calcBy], canvas.width-15, canvas.height-10);
 
   return canvas;
 }
@@ -517,7 +577,7 @@ function create_artifactset_canvas ( artifactSet ) {
   return canvas;
 }
 
-function create_totalScore_canvas ( totalScore ) {
+function create_totalScore_canvas ( totalScore , calcBy) {
   let canvas = document.createElement('canvas');
   canvas.width  = 465;
   canvas.height = 290;
@@ -535,10 +595,10 @@ function create_totalScore_canvas ( totalScore ) {
   context.fillText("総合スコア",10,40)
   context.font = '70px serif';
   context.textAlign = 'center';
-  context.fillText(totalScore,canvas.width/2,canvas.height/2+35);
+  context.fillText(totalScore[calcBy],canvas.width/2,canvas.height/2+35);
   context.font = '30px serif';
   context.textAlign = 'right';
-  context.fillText('攻撃換算',canvas.width-15,canvas.height-15);
+  context.fillText(calcBy,canvas.width-15,canvas.height-15);
   return canvas;
 }
 
@@ -580,17 +640,16 @@ async function create_build_card_canvas ( charName ) {
   context.drawImage(img,1420,30);
   var img = await getImageFromCanvas(create_artifactset_canvas(build_card[charName]["セット効果"]));
   context.drawImage(img,1420,220);
-  var img = await getImageFromCanvas(create_totalScore_canvas(build_card[charName].totalScore));
+  var img = await getImageFromCanvas(create_totalScore_canvas(build_card[charName].totalScore,calcByHash[charName]));
   context.drawImage(img,1420,340);
   var equipTypeList = ["花", "羽", "時計","杯","冠"] ;
   var interval = ( canvas.width - 360 * equipTypeList.length -70 ) / ( equipTypeList.length - 1 ) + 360;
   for ( var i=0; i<equipTypeList.length; ++i ) {
-    var img = await getImageFromCanvas(create_single_artifact_canvas(build_card[charName][equipTypeList[i]]));
+    var img = await getImageFromCanvas(create_single_artifact_canvas(build_card[charName][equipTypeList[i]],calcByHash[charName]));
     context.drawImage(img,30+interval*i,645);
   }
   return canvas;
 }
-
 
 //let uid = '851415193';
 function onload_function () {
@@ -600,8 +659,9 @@ function onload_function () {
     _GET['uid'] = window.prompt('UID',"")
     get2url ();
   }
-  load_data(_GET['uid']);
+  if ( _GET['uid'] ) {
+    document.getElementById('uid').value = _GET['uid'];
+    load_data(_GET['uid']);
+  }
 }
-
-
 
