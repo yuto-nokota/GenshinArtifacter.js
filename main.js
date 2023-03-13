@@ -101,6 +101,19 @@ let units = {
   "FIGHT_PROP_GRASS_ADD_HURT":'%',
 }
 
+let appendPropGains = {
+  "FIGHT_PROP_HP": [209, 239, 269, 299],
+  "FIGHT_PROP_ATTACK":[14, 16, 18, 19],
+  "FIGHT_PROP_DEFENSE":[16, 19, 21, 23],
+  "FIGHT_PROP_HP_PERCENT":[4.1, 4.7, 5.3, 5.8],
+  "FIGHT_PROP_ATTACK_PERCENT":[4.1, 4.7, 5.3, 5.8],
+  "FIGHT_PROP_DEFENSE_PERCENT":[5.1, 5.8, 6.6, 7.3],
+  "FIGHT_PROP_CRITICAL":[2.7, 3.1, 3.5, 3.9],
+  "FIGHT_PROP_CRITICAL_HURT": [5.4, 6.2, 7.0, 7.8],
+  "FIGHT_PROP_CHARGE_EFFICIENCY":[4.5, 5.2, 5.8, 6.5],
+  "FIGHT_PROP_ELEMENT_MASTERY":[16, 19, 21, 23],
+}
+
 let loc_appendix = {
   "ja" : {
     "FIGHT_PROP_BASE_ATTACK":'基礎攻撃力',
@@ -248,13 +261,14 @@ let timeout_ms = 1500;
 let build_card = {};
 async function parse_data ( data ) {
   let lang = 'ja';
-  if ( !(store_json['characters.json'] && store_json['loc.json']) ) {
+  if ( !(store_json['characters.json'] && store_json['loc.json'] && store_json['affixes.json']) ) {
     if ( --timeout_counter !== 0 ) setTimeout(parse_data,timeout_ms,data);
     console.log("timeout_counter = " + timeout_counter );
     return;
   }
   let characters = store_json['characters.json'];
   let loc = store_json['loc.json'];
+  let affixes = store_json['affixes.json'];
   if ( !(loc[lang] && loc_appendix[lang] ) ) {
     console.log('[INFO] lang:' + lang + ' is not supported.');
     return;
@@ -329,18 +343,26 @@ async function parse_data ( data ) {
         if ( !build_card[charName]['セット効果'][equipName] ) build_card[charName]['セット効果'][equipName] = 0;
         build_card[charName]['セット効果'][equipName]++;
         typeName = loc_appendix[lang][equip.flat.equipType];
-        build_card[charName][typeName] = {"部位" : typeName, "名前":equipName, "メイン":[],"サブ":[],"Score":{}};
+        level = equip.reliquary.level;
+        build_card[charName][typeName] = {
+          "部位" : typeName,
+          "名前":equipName,
+          "レベル" : level,
+          "メイン":{},
+          "サブ":{},
+          "Score":{}
+        };
         for ( var val of calcByList ) {
           build_card[charName][typeName].Score[val] = 0;
         }
         mainop = equip.flat['reliquaryMainstat'];
         var propname = loc_appendix[lang][mainop.mainPropId];
         var propval  = mainop.statValue + units[mainop.mainPropId];
-        build_card[charName][typeName]["メイン"] = [ propname , propval ];
+        build_card[charName][typeName]["メイン"][propname] = { "効果名": propname , "値": propval };
         for ( var subop of equip.flat['reliquarySubstats'] ) {
           var propname = loc_appendix[lang][subop.appendPropId];
           var propval  = subop.statValue + units[subop.appendPropId];
-          build_card[charName][typeName]["サブ"].push( [ propname , propval ] );
+          build_card[charName][typeName]["サブ"][propname] ={ "効果名" : propname, "値" : propval, "上昇値":[] } ;
           switch ( subop.appendPropId ) {
             case 'FIGHT_PROP_ATTACK_PERCENT' : score[calcByList[0]] += subop.statValue;   break;
             case 'FIGHT_PROP_HP_PERCENT'     : score[calcByList[1]] += subop.statValue;   break;
@@ -348,6 +370,12 @@ async function parse_data ( data ) {
             case 'FIGHT_PROP_CRITICAL'       : score.common         += subop.statValue*2; break;
             case 'FIGHT_PROP_CRITICAL_HURT'  : score.common         += subop.statValue;   break;
           }
+        }
+        for ( var gain of equip.reliquary.appendPropIdList ) {
+          var affix = affixes[gain];
+          var propname = loc_appendix[lang][affix.propType];
+          var propval  = appendPropGains[affix.propType][affix.position - 1];
+          build_card[charName][typeName]["サブ"][propname]["上昇値"].push(propval);
         }
         for ( var val of calcByList ) {
           score[val] += score.common;
@@ -434,17 +462,21 @@ function create_single_artifact_canvas ( artifacts, calcBy ) {
 
   context.font = '30px serif';
   context.textAlign = 'right';
-  context.fillText(artifacts["メイン"][0],canvas.width-15,45);
+  var mainpropname = Object.keys(artifacts["メイン"])[0];
+  context.fillText(mainpropname,canvas.width-15,45);
   context.font = '40px serif';
-  context.fillText(artifacts["メイン"][1],canvas.width-15,85);
+  context.fillText(artifacts["メイン"][mainpropname]["値"],canvas.width-15,85);
 
-  context.font = '25px serif';
-  for ( var i=0; i< artifacts["サブ"].length; ++i )  {
-    var sub = artifacts["サブ"][i];
+  var subpropnameList =  Object.keys(artifacts["サブ"]);
+  for ( var i=0; i< subpropnameList.length; ++i )  {
+    context.font = '25px serif';
+    var sub = artifacts["サブ"][subpropnameList[i]];
     context.textAlign = 'left';
-    context.fillText(sub[0],50,195+50*i);
+    context.fillText(sub["効果名"],50,195+50*i);
     context.textAlign = 'right';
-    context.fillText(sub[1],canvas.width-15,195+50*i);
+    context.fillText(sub["値"],canvas.width-15,195+50*i);
+    context.font = '15px serif';
+    context.fillText(sub["上昇値"].join('+'),canvas.width-15,210+50*i);
   }
 
   context.font = '25px serif';
@@ -655,6 +687,7 @@ async function create_build_card_canvas ( charName ) {
 function onload_function () {
   load_store_json('loc.json');
   load_store_json('characters.json');
+  load_store_json('affixes.json');
   if ( !_GET['uid'] ) {
     _GET['uid'] = window.prompt('UID',"")
     get2url ();
