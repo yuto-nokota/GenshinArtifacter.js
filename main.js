@@ -42,8 +42,8 @@ function copy_url () {
 let data_json = '';
 function load_data ( uid ) {
   var xhr = new XMLHttpRequest();
-  //var url = 'https://enka.network/api/uid/' + uid;
-  var url = './testdata/851415193.json';
+  var url = 'https://enka.network/api/uid/' + uid;
+  //var url = './testdata/851415193.json';
   xhr.responseType = "text"
   xhr.open('GET', url , true);
   xhr.onload = async function () {
@@ -63,8 +63,8 @@ function load_data ( uid ) {
 let store_json = {};
 function load_store_json ( fname ) {
   var xhr = new XMLHttpRequest();
-  //var url = 'https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/' + fname;
-  var url = './testdata/' + fname;
+  var url = 'https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/' + fname;
+  //var url = './testdata/' + fname;
   xhr.responseType = "text"
   xhr.open('GET', url , true);
   xhr.onload = function () {
