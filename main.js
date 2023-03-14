@@ -577,7 +577,7 @@ function create_prop_canvas ( prop ) {
   return canvas;
 }
 
-function getImageFromURL ( url ) {
+async function getImageFromURL ( url ) {
   var date = localStorage.getItem('date');
   var current = new Date().getTime();
   var spend = current - (date?date:0);
@@ -723,9 +723,9 @@ function create_totalScore_canvas ( totalScore , calcBy) {
 
   context.textAlign = 'left';
   context.font = '10px serif';
-  context.fillText("Powered by",30,210)
+  context.fillText("Powered by",30,200)
   context.font = '20px serif';
-  context.fillText("Enka.Network",30,230)
+  context.fillText("Enka.Network",30,220)
 
   context.font = '25px serif';
   context.fillText("Artifacter",15,270)
