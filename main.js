@@ -585,6 +585,7 @@ function getImageFromURL ( url ) {
   if ( src && ( spend < 3600000 )) {
     return __getImageFromURL(src);
   }
+  localStorage.setItem('date',current);
   var img = await __getImageFromURL ( url );
   var canvas = document.createElement('canvas');
   canvas.width  = img.width;
