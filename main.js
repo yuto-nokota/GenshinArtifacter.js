@@ -367,6 +367,7 @@ async function parse_data ( data ) {
         var propname = loc_appendix[lang][mainop.mainPropId];
         var propval  = mainop.statValue + units[mainop.mainPropId];
         build_card[charName][typeName].iconURL = 'https://enka.network/ui/' + equip.flat.icon + '.png';
+        build_card[charName][typeName]["レベル"] = '+' + ( level - 1 );
         build_card[charName][typeName]["メイン"][propname] = { "効果名": propname , "値": propval };
         for ( var subop of equip.flat['reliquarySubstats'] ) {
           var propname = loc_appendix[lang][subop.appendPropId];
@@ -490,6 +491,15 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
   context.font = '40px serif';
   context.fillText(artifacts["メイン"][mainpropname]["値"],canvas.width-15,85);
 
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [0,0,0,0.3] + ')';
+  context.fillRect(canvas.width-61,90,47,30); 
+  context.fillStyle = fillStyleOrg;
+
+  context.font = '25px serif';
+  context.textAlign = 'right';
+  context.fillText(artifacts["レベル"],canvas.width-15,115);
+
   var subpropnameList =  Object.keys(artifacts["サブ"]);
   for ( var i=0; i< subpropnameList.length; ++i )  {
     context.font = '25px serif';
@@ -501,6 +511,12 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
     context.font = '15px serif';
     context.fillText(sub["上昇値"].join('+'),canvas.width-15,210+50*i);
   }
+
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + midground + ')';
+  context.fillRoundRect = fillRoundRect;
+  context.fillRoundRect(0,canvas.height-45,canvas.width, 45, 10);
+  context.fillStyle = fillStyleOrg;
 
   context.font = '25px serif';
   context.textAlign = 'right';
@@ -596,6 +612,7 @@ async function getImageFromURL ( url ) {
   return img;
 }
 
+// no cache function
 function __getImageFromURL ( url ) {
   return new Promise ( ( resolve, reject ) => {
     const image = new Image();
@@ -716,10 +733,14 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   context.fillText("総合スコア",10,40)
   context.font = '70px serif';
   context.textAlign = 'center';
-  context.fillText(totalScore[calcBy],canvas.width/2,canvas.height/2+35);
+  context.fillText(totalScore[calcBy],canvas.width/2,(canvas.height-55)/2+35);
   context.font = '30px serif';
   context.textAlign = 'right';
   context.fillText(calcBy,canvas.width-15,canvas.height-15);
+
+  context.fillStyle = 'rgba(' + midground + ')';
+  context.fillRoundRect = fillRoundRect;
+  context.fillRoundRect(0,canvas.height-55,canvas.width, 55, 10);
 
   context.textAlign = 'left';
   context.font = '10px serif';
@@ -730,9 +751,6 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   context.font = '25px serif';
   context.fillText("Artifacter",15,270)
 
-  context.fillStyle = 'rgba(' + midground + ')';
-  context.fillRoundRect = fillRoundRect;
-  context.fillRoundRect(0,canvas.height-55,canvas.width, 55, 10);
   return canvas;
 }
 
