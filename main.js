@@ -576,7 +576,26 @@ function create_prop_canvas ( prop ) {
   }
   return canvas;
 }
+
 function getImageFromURL ( url ) {
+  var date = localStorage.getItem('date');
+  var current = new Date().getTime();
+  var spend = current - (date?date:0);
+  var src  = localStorage.getItem(url);
+  if ( src && ( spend < 3600000 )) {
+    return __getImageFromURL(src);
+  }
+  var img = await __getImageFromURL ( url );
+  var canvas = document.createElement('canvas');
+  canvas.width  = img.width;
+  canvas.height = img.height;
+  var context = canvas.getContext('2d');
+  context.drawImage(img,0,0);
+  localStorage.setItem(url,canvas.toDataURL());
+  return img;
+}
+
+function __getImageFromURL ( url ) {
   return new Promise ( ( resolve, reject ) => {
     const image = new Image();
     image.onload  = () => resolve(image);
