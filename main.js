@@ -601,10 +601,10 @@ async function create_character_canvas(charName) {
   context.fillText("好感度" + build_card[charName]["好感度"],105,105)
 
   // TODO How can I get character URL ?
-  // https://enka.network/ui/UI_Gacha_AvatarImg_Ganyu.png
-  //var img = await getImageFromURL('https://enka.network/ui/UI_Gacha_AvatarImg_Ganyu.png');
-  //var r = Math.min(img.width/canvas.width, img.height/canvas.height);
-  //context.drawImage(img, (img.width-r*canvas.width)/2, (img.height-r*canvas.height)/2, r*canvas.width, r*canvas.height, 0, 0, canvas.width, canvas.height);
+  var charNameEn = loc["en"][characters[charNameHash[charName]].NameTextMapHash].split(' ');
+  var img = await getImageFromURL('https://enka.network/ui/UI_Gacha_AvatarImg_' + charNameEn[charNameEn.length-1] + '.png');
+  var r = Math.min(img.width/canvas.width, img.height/canvas.height);
+  context.drawImage(img, (img.width-r*canvas.width)/2, (img.height-r*canvas.height)/2, r*canvas.width, r*canvas.height, 0, 0, canvas.width, canvas.height);
 
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + [0,0,0,0.2] + ')';
@@ -700,6 +700,19 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   context.font = '30px serif';
   context.textAlign = 'right';
   context.fillText(calcBy,canvas.width-15,canvas.height-15);
+
+  context.textAlign = 'left';
+  context.font = '10px serif';
+  context.fillText("Powered by",30,210)
+  context.font = '20px serif';
+  context.fillText("Enka.Network",30,230)
+
+  context.font = '25px serif';
+  context.fillText("Artifacter",15,270)
+
+  context.fillStyle = 'rgba(' + midground + ')';
+  context.fillRoundRect = fillRoundRect;
+  context.fillRoundRect(0,canvas.height-55,canvas.width, 55, 10);
   return canvas;
 }
 
