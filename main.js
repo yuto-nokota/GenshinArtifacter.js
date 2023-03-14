@@ -256,9 +256,16 @@ function setUid () {
   load_data(_GET['uid']);
 }
 
+let charNameHash = {};
+
 let timeout_counter=5;
 let timeout_ms = 1500;
 let build_card = {};
+
+let characters = null;
+let loc = null;
+let affixes = null;
+
 async function parse_data ( data ) {
   let lang = 'ja';
   if ( !(store_json['characters.json'] && store_json['loc.json'] && store_json['affixes.json']) ) {
@@ -266,9 +273,9 @@ async function parse_data ( data ) {
     console.log("timeout_counter = " + timeout_counter );
     return;
   }
-  let characters = store_json['characters.json'];
-  let loc = store_json['loc.json'];
-  let affixes = store_json['affixes.json'];
+  characters = store_json['characters.json'];
+  loc = store_json['loc.json'];
+  affixes = store_json['affixes.json'];
   if ( !(loc[lang] && loc_appendix[lang] ) ) {
     console.log('[INFO] lang:' + lang + ' is not supported.');
     return;
@@ -279,6 +286,7 @@ async function parse_data ( data ) {
   for ( var avatarInfo of avatarInfoList ) {
     var id = avatarInfo.avatarId;
     var charName = loc[lang][characters[id].NameTextMapHash];
+    charNameHash[charName] = id;
     build_card[charName] = { "prop" : {}, "totalScore" : {}, "セット効果":{} };
     for ( var val of calcByList ) {
       build_card[charName].totalScore[val] = 0;
@@ -358,6 +366,7 @@ async function parse_data ( data ) {
         mainop = equip.flat['reliquaryMainstat'];
         var propname = loc_appendix[lang][mainop.mainPropId];
         var propval  = mainop.statValue + units[mainop.mainPropId];
+        build_card[charName][typeName].iconURL = 'https://enka.network/ui/' + equip.flat.icon + '.png';
         build_card[charName][typeName]["メイン"][propname] = { "効果名": propname , "値": propval };
         for ( var subop of equip.flat['reliquarySubstats'] ) {
           var propname = loc_appendix[lang][subop.appendPropId];
@@ -393,6 +402,7 @@ async function parse_data ( data ) {
           "レベル" : 'Lv.' + equip.weapon.level,
           "精錬ランク" : affixRank,
         };
+        build_card[charName]["武器"].iconURL = 'https://enka.network/ui/' + equip.flat.icon + '.png';
         for ( var wStats of equip.flat.weaponStats ) {
           var propname = loc_appendix[lang][wStats.appendPropId];
           var propval  = wStats.statValue;
@@ -441,7 +451,21 @@ function fillRoundRect(x, y, w, h, r) {
     this.fill();
 }
 
-function create_single_artifact_canvas ( artifacts, calcBy ) {
+const forground = [ 255, 255, 255, 1.0];
+const midground = [   0,   0,   0, 0.1];
+const background =[   0,   0,   0, 1.0];
+const elementColor = {
+  "Ice"      : [   0, 192, 255, 0.5],
+  "Wind"     : [   0, 255, 221, 0.5],
+  "Electric" : [ 188, 103, 255, 0.5],
+  "Water"    : [  77, 156, 255, 0.5],
+  "Fire"     : [ 255, 110,  82, 0.5],
+  "Rock"     : [ 255, 176,  51, 0.5],
+  "Grass"    : [  64, 255,  70, 0.5],
+  "None"     : [ 100, 100, 100, 0.5],
+}
+
+async function create_single_artifact_canvas ( artifacts, calcBy ) {
   let canvas = document.createElement('canvas');
   canvas.width  = 360;
   canvas.height = 415;
@@ -449,16 +473,15 @@ function create_single_artifact_canvas ( artifacts, calcBy ) {
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
   var fillStyleOrg = context.fillStyle;
-  context.fillStyle = 'rgba(' + [ 0, 0, 0, 0.1] + ')';
+  context.fillStyle = 'rgba(' + midground + ')';
   context.fillRoundRect = fillRoundRect;
   context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
   context.fillStyle = fillStyleOrg;
+  context.fillStyle = 'rgba(' + forground + ')';
 
-  context.font = '100px serif';
-  context.textAlign = 'left';
-  context.fillText(artifacts["部位"],0,100)
-  context.font = '16px serif';
-  context.fillText(artifacts["名前"],0,130)
+  var img = await getImageFromURL( artifacts.iconURL);
+  var r = Math.min ( 175 / ( img.width * 0.75 ),  200 / (img.height * 0.80 ) );
+  context.drawImage(img,img.width*0.25,img.height*0.2,img.width*0.75,img.height*0.8, 0,0,r*img.width,r*img.height);
 
   context.font = '30px serif';
   context.textAlign = 'right';
@@ -488,8 +511,8 @@ function create_single_artifact_canvas ( artifacts, calcBy ) {
   return canvas;
 }
 
-function create_weapon_canvas ( weapon ) {
-  const keyHash = { "名前" : true, "レベル": true, "精錬ランク": true, "基礎攻撃力" : true, };
+async function create_weapon_canvas ( weapon ) {
+  const keyHash = { "名前" : true, "レベル": true, "精錬ランク": true, "基礎攻撃力" : true, "iconURL" : true };
   let canvas = document.createElement('canvas');
   canvas.width  = 465;
   canvas.height = 180;
@@ -497,10 +520,16 @@ function create_weapon_canvas ( weapon ) {
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
   var fillStyleOrg = context.fillStyle;
-  context.fillStyle = 'rgba(' + [ 0, 0, 0, 0.1] + ')';
+  context.fillStyle = 'rgba(' + midground + ')';
   context.fillRoundRect = fillRoundRect;
   context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
   context.fillStyle = fillStyleOrg;
+  context.fillStyle = 'rgba(' + forground + ')';
+
+  var img = await getImageFromURL( weapon.iconURL);
+  var r = Math.min ( 140 / img.width ,  140 / img.height ) ;
+  //context.drawImage(img,10,30,150,150)
+  context.drawImage(img,10,40,r*img.width,r*img.height)
 
   context.font = '25px serif';
   context.fillText('精錬ランク' + weapon["精錬ランク"],10,35)
@@ -529,10 +558,11 @@ function create_prop_canvas ( prop ) {
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
   var fillStyleOrg = context.fillStyle;
-  context.fillStyle = 'rgba(' + [ 0, 0, 0, 0.1] + ')';
+  context.fillStyle = 'rgba(' + midground + ')';
   context.fillRoundRect = fillRoundRect;
   context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
   context.fillStyle = fillStyleOrg;
+  context.fillStyle = 'rgba(' + forground + ')';
 
   var interval = (canvas.height - 25 * Object.keys(prop).length) / ( Object.keys(prop).length + 1) + 25;
   context.font = '25px serif';
@@ -546,32 +576,69 @@ function create_prop_canvas ( prop ) {
   }
   return canvas;
 }
+function getImageFromURL ( url ) {
+  return new Promise ( ( resolve, reject ) => {
+    const image = new Image();
+    image.onload  = () => resolve(image);
+    image.onerror = (e) => reject(e);
+    image.src = url;
+    image.crossOrigin = 'anonymous';
+  });
+}
 
-function create_character_canvas(charName) {
+async function create_character_canvas(charName) {
   let canvas = document.createElement('canvas');
   canvas.width  = 750;
   canvas.height = 640;
   canvas.style["width"]  = canvas.width;
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
+  context.fillStyle = 'rgba(' + forground + ')';
   context.font = '50px serif';
   context.fillText(charName,30,70)
   context.font = '25px serif';
   context.fillText(build_card[charName]["レベル"],30,105)
   context.fillText("好感度" + build_card[charName]["好感度"],105,105)
 
-  context.font = '25px serif';
-  context.fillText("通常",30,400)
+  // TODO How can I get character URL ?
+  // https://enka.network/ui/UI_Gacha_AvatarImg_Ganyu.png
+  //var img = await getImageFromURL('https://enka.network/ui/UI_Gacha_AvatarImg_Ganyu.png');
+  //var r = Math.min(img.width/canvas.width, img.height/canvas.height);
+  //context.drawImage(img, (img.width-r*canvas.width)/2, (img.height-r*canvas.height)/2, r*canvas.width, r*canvas.height, 0, 0, canvas.width, canvas.height);
+
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [0,0,0,0.2] + ')';
+  context.beginPath();
+  context.arc(55,395,25,0,Math.PI*2,false);
+  context.fill();
+  context.fillStyle = fillStyleOrg;
+  var character = characters[charNameHash[charName]];
+  var img = await getImageFromURL( 'https://enka.network/ui/' + character.Skills[character.SkillOrder[0]] + '.png' );
+  context.drawImage(img,30,360,50,50);
   context.font = '20px serif';
   context.fillText(build_card[charName]["天賦"]["通常"],30,425)
 
-  context.font = '25px serif';
-  context.fillText("スキル",30,500)
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [0,0,0,0.2] + ')';
+  context.beginPath();
+  context.arc(55,495,25,0,Math.PI*2,false);
+  context.fill();
+  context.fillStyle = fillStyleOrg;
+  var character = characters[charNameHash[charName]];
+  var img = await getImageFromURL( 'https://enka.network/ui/' + character.Skills[character.SkillOrder[1]] + '.png' );
+  context.drawImage(img,30,460,50,50);
   context.font = '20px serif';
   context.fillText(build_card[charName]["天賦"]["スキル"],30,525)
 
-  context.font = '25px serif';
-  context.fillText("爆発",30,600)
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [0,0,0,0.2] + ')';
+  context.beginPath();
+  context.arc(55,595,25,0,Math.PI*2,false);
+  context.fill();
+  context.fillStyle = fillStyleOrg;
+  var character = characters[charNameHash[charName]];
+  var img = await getImageFromURL( 'https://enka.network/ui/' + character.Skills[character.SkillOrder[2]] + '.png' );
+  context.drawImage(img,30,560,50,50);
   context.font = '20px serif';
   context.fillText(build_card[charName]["天賦"]["爆発"],30,625)
   return canvas;
@@ -585,10 +652,11 @@ function create_artifactset_canvas ( artifactSet ) {
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
   var fillStyleOrg = context.fillStyle;
-  context.fillStyle = 'rgba(' + [ 0, 0, 0, 0.1] + ')';
+  context.fillStyle = 'rgba(' + midground + ')';
   context.fillRoundRect = fillRoundRect;
   context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
   context.fillStyle = fillStyleOrg;
+  context.fillStyle = 'rgba(' + forground + ')';
 
   var set = {};
   for ( var key in artifactSet ) {
@@ -617,10 +685,11 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
   var fillStyleOrg = context.fillStyle;
-  context.fillStyle = 'rgba(' + [ 0, 0, 0, 0.1] + ')';
+  context.fillStyle = 'rgba(' + midground + ')';
   context.fillRoundRect = fillRoundRect;
   context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
   context.fillStyle = fillStyleOrg;
+  context.fillStyle = 'rgba(' + forground + ')';
 
   context.font = '40px serif';
   context.textAlign = 'left';
@@ -659,16 +728,33 @@ async function create_build_card_canvas ( charName ) {
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
   var fillStyleOrg = context.fillStyle;
-  context.fillStyle = 'rgba(' + [ 228, 228, 255, 1] + ')';
+  context.fillStyle = 'rgba(' + background + ')';
   context.fillRoundRect = fillRoundRect;
   context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
   context.fillStyle = fillStyleOrg;
 
-  var img = await getImageFromCanvas(create_character_canvas(charName));
+  var img = await getImageFromURL('https://enka.network/img/overlay.jpg');
+  var r = Math.min(img.width/canvas.width, img.height/canvas.height);
+  context.drawImage(img, (img.width-r*canvas.width)/2, (img.height-r*canvas.height)/2, r*canvas.width, r*canvas.height, 0, 0, canvas.width, canvas.height);
+
+
+  var ec = elementColor[characters[charNameHash[charName]].Element];
+  context.fillStyle = 'rgba(' + ( (ec) ? (ec) : [255,255,255,0.5]) + ')';
+  context.fillRoundRect = fillRoundRect;
+  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillStyle = fillStyleOrg;
+
+  var img = await getImageFromURL('https://enka.network/svg/Shade.svg');
+  var r = Math.min(img.width/canvas.width, img.height/canvas.height);
+  context.drawImage(img, 0, 0, img.width * canvas.height / img.height, canvas.height);
+
+  context.fillStyle = 'rgba(' + forground + ')';
+
+  var img = await getImageFromCanvas(await create_character_canvas(charName));
   context.drawImage(img,0,0);
   var img = await getImageFromCanvas(create_prop_canvas(build_card[charName].prop));
   context.drawImage(img,760,30);
-  var img = await getImageFromCanvas(create_weapon_canvas(build_card[charName]["武器"]));
+  var img = await getImageFromCanvas(await create_weapon_canvas(build_card[charName]["武器"]));
   context.drawImage(img,1420,30);
   var img = await getImageFromCanvas(create_artifactset_canvas(build_card[charName]["セット効果"]));
   context.drawImage(img,1420,220);
@@ -677,7 +763,7 @@ async function create_build_card_canvas ( charName ) {
   var equipTypeList = ["花", "羽", "時計","杯","冠"] ;
   var interval = ( canvas.width - 360 * equipTypeList.length -70 ) / ( equipTypeList.length - 1 ) + 360;
   for ( var i=0; i<equipTypeList.length; ++i ) {
-    var img = await getImageFromCanvas(create_single_artifact_canvas(build_card[charName][equipTypeList[i]],calcByHash[charName]));
+    var img = await getImageFromCanvas(await create_single_artifact_canvas(build_card[charName][equipTypeList[i]],calcByHash[charName]));
     context.drawImage(img,30+interval*i,645);
   }
   return canvas;
