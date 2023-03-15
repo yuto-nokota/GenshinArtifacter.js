@@ -443,6 +443,7 @@ async function print_build_card () {
     if ( e ) calcByHash[key] = e.value;
   }
   document.getElementById('main').innerHTML = '';
+  // TODO improve performance
   for ( var key in build_card ) {
     document.getElementById('main').appendChild(document.createTextNode(key));
     document.getElementById('main').appendChild(create_calcBySelectList(key));
@@ -685,7 +686,10 @@ async function create_character_canvas(charName) {
   // TODO How can I get character URL ?
   var charNameEn = loc["en"][characters[charNameHash[charName]].NameTextMapHash].split(' ');
   img.push(getImageFromURL('https://enka.network/ui/UI_Gacha_AvatarImg_' 
-                                   + charNameEn[charNameEn.length-1].replace('Thoma','Tohma') + '.png'
+                                   + charNameEn[charNameEn.length-1]
+                                     .replace('Thoma','Tohma')
+                                     .replace('Shogun','Shougun')
+                                   + '.png'
                           )
           );
   img = await await Promise.all( img );
