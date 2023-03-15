@@ -49,12 +49,12 @@ function load_data ( uid ) {
   xhr.onload = async function () {
     data_json = JSON.parse(xhr.responseText);
     if ( xhr.status == '200' ) {
-      console.log('[INFO]'+' Success loading data.' + xhr.status);
+      console.log('[INFO]'+' Success loading data. (' + xhr.status + ')' );
       console.log(data_json);
       await parse_data(data_json);
       print_build_card();
     } else {
-      console.log('[INFO]'+ 'Failure loading data.' + xhr.status);
+      console.log('[INFO]'+ 'Failure loading data. (' + xhr.status + ')' );
     }
   }
   xhr.send();
@@ -70,9 +70,9 @@ function load_store_json ( fname ) {
   xhr.onload = function () {
     store_json[fname] = JSON.parse(xhr.responseText);
     if ( xhr.status == '200' ) {
-      console.log('[INFO]'+' Success loading characters.' + xhr.status);
+      console.log('[INFO]'+' Success loading ' + fname + '. (' + xhr.status + ')' );
     } else {
-      console.log('[INFO]'+ 'Failure loading characters.' + xhr.status);
+      console.log('[INFO]'+ 'Failure loading ' + fname + '. (' + xhr.status + ')' );
     }
   }
   xhr.send();
