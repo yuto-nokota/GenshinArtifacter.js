@@ -305,37 +305,52 @@ async function parse_data ( data ) {
     var MaxHP   = Math.floor( avatarInfo.fightPropMap[2000] + 0.5 );
     var BaseHP  = Math.floor( avatarInfo.fightPropMap[   1] + 0.5 );
     var AdditionalHP = Math.floor ( MaxHP - BaseHP );
-    build_card[charName].prop['HP'] = MaxHP + '=' + BaseHP + '+' + AdditionalHP;
+    build_card[charName].prop['HP'] = {};
+    build_card[charName].prop['HP'].value      = MaxHP;
+    build_card[charName].prop['HP'].base       = BaseHP;
+    build_card[charName].prop['HP'].additional = AdditionalHP;
     //   parse ATK
     var ATK     = Math.floor( avatarInfo.fightPropMap[2001] + 0.5 );
     var BaseATK = Math.floor( avatarInfo.fightPropMap[   4] + 0.5 );
     var AdditionalATK = Math.floor ( ATK - BaseATK );
-    build_card[charName].prop['攻撃力'] = ATK + '=' + BaseATK + '+' + AdditionalATK;
+    build_card[charName].prop['攻撃力'] = {};
+    build_card[charName].prop['攻撃力'].value      = ATK;
+    build_card[charName].prop['攻撃力'].base       = BaseATK;
+    build_card[charName].prop['攻撃力'].additional = AdditionalATK;
     //   parse DF
     var DF     = Math.floor( avatarInfo.fightPropMap[2002] + 0.5 );
     var BaseDF = Math.floor( avatarInfo.fightPropMap[   7] + 0.5 );
     var AdditionalDF = Math.floor ( DF - BaseDF );
-    build_card[charName].prop['防御力'] = DF + '=' + BaseDF + '+' + AdditionalDF;
+    build_card[charName].prop['防御力'] = {};
+    build_card[charName].prop['防御力'].value      = DF;
+    build_card[charName].prop['防御力'].base       = BaseDF;
+    build_card[charName].prop['防御力'].additional = AdditionalDF;
     //   parse Elemental Mastery
-    build_card[charName].prop['元素熟知'] = Math.floor(avatarInfo.fightPropMap[28] + 0.5);
+    build_card[charName].prop['元素熟知'] = {};
+    build_card[charName].prop['元素熟知'].value = Math.floor(avatarInfo.fightPropMap[28] + 0.5);
     //   parse Critical Rate
-    build_card[charName].prop['会心率'] = Math.floor(avatarInfo.fightPropMap[20] * 1000 + 0.5 ) / 10 + '%';
+    build_card[charName].prop['会心率'] = {};
+    build_card[charName].prop['会心率'].value = Math.floor(avatarInfo.fightPropMap[20] * 1000 + 0.5 ) / 10 + '%';
     //   parse Critical Damage
-    build_card[charName].prop['会心ダメ'] = Math.floor(avatarInfo.fightPropMap[22] * 1000 + 0.5 ) / 10 + '%';
+    build_card[charName].prop['会心ダメ'] = {};
+    build_card[charName].prop['会心ダメ'].value = Math.floor(avatarInfo.fightPropMap[22] * 1000 + 0.5 ) / 10 + '%';
     //   parse Charge
-    build_card[charName].prop['元素チャージ効率'] = Math.floor(avatarInfo.fightPropMap[23] * 1000 + 0.5 ) / 10 + '%';
+    build_card[charName].prop['元素チャージ効率'] = {};
+    build_card[charName].prop['元素チャージ効率'].value = Math.floor(avatarInfo.fightPropMap[23] * 1000 + 0.5 ) / 10 + '%';
     //   parse Elemental Damage Buff
     for ( var i of [ 30, 40, 41, 42, 43, 44, 45, 46] ) {
       if ( !avatarInfo.fightPropMap[i] ) continue;
       //if ( avatarInfo.fightPropMap[i] == 0 ) continue;
-      build_card[charName].prop[loc_appendix[lang].FIGHT_PROP_ID_TABLE[i]] = 
+      build_card[charName].prop[loc_appendix[lang].FIGHT_PROP_ID_TABLE[i]] = {};
+      build_card[charName].prop[loc_appendix[lang].FIGHT_PROP_ID_TABLE[i]].value = 
         Math.floor(avatarInfo.fightPropMap[i] * 1000 + 0.5 ) / 10 + '%';
     }
     //   parse Others
     for ( var i of [ 26, 27, ] ) {
       if ( !avatarInfo.fightPropMap[i] ) continue;
       //if ( avatarInfo.fightPropMap[i] == 0 ) continue;
-      build_card[charName].prop[loc_appendix[lang].FIGHT_PROP_ID_TABLE[i]] = 
+      build_card[charName].prop[loc_appendix[lang].FIGHT_PROP_ID_TABLE[i]] = {};
+      build_card[charName].prop[loc_appendix[lang].FIGHT_PROP_ID_TABLE[i]].value = 
         Math.floor(avatarInfo.fightPropMap[i] * 1000 + 0.5 ) / 10 + '%';
     }
     // parse artifacts and weapon
@@ -584,13 +599,22 @@ function create_prop_canvas ( prop ) {
   context.fillStyle = 'rgba(' + forground + ')';
 
   var interval = (canvas.height - 25 * Object.keys(prop).length) / ( Object.keys(prop).length + 1) + 25;
-  context.font = '25px serif';
   var i=1;
   for ( var key in prop ) {
+    context.font = '25px serif';
     context.textAlign = 'left';
     context.fillText(key,80, interval*i )
     context.textAlign = 'right';
-    context.fillText(prop[key],canvas.width-30, interval*i )
+    context.fillText(prop[key].value,canvas.width-30, interval*i );
+    if ( prop[key].base && prop[key].additional ) {
+      var fillStyleOrg = context.fillStyle;
+      context.fillStyle = 'rgba(' + forground + ')';
+      context.font = '15px serif';
+      context.fillText(prop[key].base + '+' + prop[key].additional,canvas.width-30, interval*i+20 );
+      context.fillStyle = 'rgba(' + [108,223,154,1.0]+ ')';
+      context.fillText('+' + prop[key].additional,canvas.width-30, interval*i+20 );
+      context.fillStyle = fillStyleOrg;
+    }
     i++;
   }
   return canvas;
