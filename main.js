@@ -300,6 +300,7 @@ async function parse_data ( data ) {
     //   TODO parse Prop
     build_card[charName]["レベル"] = 'Lv.' + avatarInfo.propMap[4001].val;
     build_card[charName]["好感度"] = avatarInfo.fetterInfo.expLevel;
+    build_card[charName]["凸"] = (avatarInfo.talentIdList) ? (avatarInfo.talentIdList.length ) : 0;
     // parse fight properties
     //   parse HP
     var MaxHP   = Math.floor( avatarInfo.fightPropMap[2000] + 0.5 );
@@ -685,10 +686,11 @@ async function create_character_canvas(charName) {
   context.fillText(build_card[charName]["レベル"],30,105)
   context.fillText("好感度" + build_card[charName]["好感度"],105,105)
 
+  var character = characters[charNameHash[charName]];
+
   // load images
   let img = [];
   for ( var i=0; i<3; i++ ) {
-    var character = characters[charNameHash[charName]];
     img.push(getImageFromURL( 'https://enka.network/ui/' + character.Skills[character.SkillOrder[i]] + '.png' ) );
   }
   // TODO How can I get character URL ?
@@ -701,6 +703,9 @@ async function create_character_canvas(charName) {
                                    + '.png'
                           )
           );
+  for ( i=0; i<6; ++i ) {
+    img.push(getImageFromURL( 'https://enka.network/ui/' + character.Consts[i] + '.png' ) );
+  }
   img = await await Promise.all( img );
 
   var r = Math.min(img[3].width/canvas.width, img[3].height/canvas.height);
@@ -721,6 +726,30 @@ async function create_character_canvas(charName) {
     context.fillText(build_card[charName]["天賦"][kindlist[i]],30,425+100*i)
     context.fillStyle = fillStyleOrg;
   }
+
+  var strokeStyleOrg = context.strokeStyle;
+  var lineWidthOrg = context.lineWidth;
+  context.strokeStyle = 'rgba(' + [0,0,255,0.5] + ')';
+  context.lineWidth = '8';
+  for ( i=0; i<build_card[charName]["凸"]; ++i ) {
+    context.beginPath();
+    context.arc(canvas.width-30,135+90*i,25,0,Math.PI*2,false);
+    //context.fill();
+    context.stroke();
+  }
+  context.strokeStyle = strokeStyleOrg;
+  context.lineWidth = lineWidthOrg;
+
+  for ( i=0; i<6; ++i ) {
+    context.drawImage(img[i+4],canvas.width-55,110+90*i,50,50);
+  }
+  context.font = '50px serif';
+  context.textAlign = 'right';
+  for ( i=build_card[charName]["凸"]; i<6; ++i ) {
+    context.fillText("×" ,canvas.width-5,160+90*i);
+  }
+  context.textAlign = 'left';
+
   return canvas;
 }
 
