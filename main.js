@@ -117,9 +117,9 @@ let appendPropGains = {
 let loc_appendix = {
   "ja" : {
     "FIGHT_PROP_BASE_ATTACK":'基礎攻撃力',
-    "FIGHT_PROP_HP":'HP固定値',
-    "FIGHT_PROP_ATTACK":'攻撃力固定値',
-    "FIGHT_PROP_DEFENSE":'防御力固定値',
+    "FIGHT_PROP_HP":'HP',
+    "FIGHT_PROP_ATTACK":'攻撃力',
+    "FIGHT_PROP_DEFENSE":'防御力',
     "FIGHT_PROP_HP_PERCENT":'HP%',
     "FIGHT_PROP_ATTACK_PERCENT":'攻撃力%',
     "FIGHT_PROP_DEFENSE_PERCENT":'防御力%',
