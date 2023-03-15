@@ -369,23 +369,25 @@ async function parse_data ( data ) {
         build_card[charName][typeName].iconURL = 'https://enka.network/ui/' + equip.flat.icon + '.png';
         build_card[charName][typeName]["レベル"] = '+' + ( level - 1 );
         build_card[charName][typeName]["メイン"][propname] = { "効果名": propname , "値": propval };
-        for ( var subop of equip.flat['reliquarySubstats'] ) {
-          var propname = loc_appendix[lang][subop.appendPropId];
-          var propval  = subop.statValue + units[subop.appendPropId];
-          build_card[charName][typeName]["サブ"][propname] ={ "効果名" : propname, "値" : propval, "上昇値":[] } ;
-          switch ( subop.appendPropId ) {
-            case 'FIGHT_PROP_ATTACK_PERCENT' : score[calcByList[0]] += subop.statValue;   break;
-            case 'FIGHT_PROP_HP_PERCENT'     : score[calcByList[1]] += subop.statValue;   break;
-            case 'FIGHT_PROP_DEFENSE_PERCENT': score[calcByList[2]] += subop.statValue;   break;
-            case 'FIGHT_PROP_CRITICAL'       : score.common         += subop.statValue*2; break;
-            case 'FIGHT_PROP_CRITICAL_HURT'  : score.common         += subop.statValue;   break;
+        if ( equip.flat.reliquarySubstats ) {
+          for ( var subop of equip.flat['reliquarySubstats'] ) {
+            var propname = loc_appendix[lang][subop.appendPropId];
+            var propval  = subop.statValue + units[subop.appendPropId];
+            build_card[charName][typeName]["サブ"][propname] ={ "効果名" : propname, "値" : propval, "上昇値":[] } ;
+            switch ( subop.appendPropId ) {
+              case 'FIGHT_PROP_ATTACK_PERCENT' : score[calcByList[0]] += subop.statValue;   break;
+              case 'FIGHT_PROP_HP_PERCENT'     : score[calcByList[1]] += subop.statValue;   break;
+              case 'FIGHT_PROP_DEFENSE_PERCENT': score[calcByList[2]] += subop.statValue;   break;
+              case 'FIGHT_PROP_CRITICAL'       : score.common         += subop.statValue*2; break;
+              case 'FIGHT_PROP_CRITICAL_HURT'  : score.common         += subop.statValue;   break;
+            }
           }
-        }
-        for ( var gain of equip.reliquary.appendPropIdList ) {
-          var affix = affixes[gain];
-          var propname = loc_appendix[lang][affix.propType];
-          var propval  = appendPropGains[affix.propType][affix.position - 1];
-          build_card[charName][typeName]["サブ"][propname]["上昇値"].push(propval);
+          for ( var gain of equip.reliquary.appendPropIdList ) {
+            var affix = affixes[gain];
+            var propname = loc_appendix[lang][affix.propType];
+            var propval  = appendPropGains[affix.propType][affix.position - 1];
+            build_card[charName][typeName]["サブ"][propname]["上昇値"].push(propval);
+          }
         }
         for ( var val of calcByList ) {
           score[val] += score.common;
@@ -397,7 +399,7 @@ async function parse_data ( data ) {
         // if equip is a weapon
         equipName = loc[lang][equip.flat.nameTextMapHash];
         affixMap = equip.weapon.affixMap;
-        affixRank = affixMap[Object.keys(affixMap)[0]] + 1;
+        affixRank = ( (affixMap) ? (affixMap[Object.keys(affixMap)[0]] + 1 ) : 1 );
         build_card[charName]["武器"] = { 
           "名前" : equipName,
           "レベル" : 'Lv.' + equip.weapon.level,
@@ -480,6 +482,7 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
   context.fillStyle = fillStyleOrg;
   context.fillStyle = 'rgba(' + forground + ')';
 
+  if ( !artifacts ) return canvas;
   var img = await getImageFromURL( artifacts.iconURL);
   var r = Math.min ( 175 / ( img.width * 0.75 ),  200 / (img.height * 0.80 ) );
   context.drawImage(img,img.width*0.25,img.height*0.2,img.width*0.75,img.height*0.8, 0,0,r*img.width,r*img.height);
@@ -645,7 +648,10 @@ async function create_character_canvas(charName) {
 
   // TODO How can I get character URL ?
   var charNameEn = loc["en"][characters[charNameHash[charName]].NameTextMapHash].split(' ');
-  var img = await getImageFromURL('https://enka.network/ui/UI_Gacha_AvatarImg_' + charNameEn[charNameEn.length-1] + '.png');
+
+  var img = await getImageFromURL('https://enka.network/ui/UI_Gacha_AvatarImg_' 
+                                   + charNameEn[charNameEn.length-1].replace('Thoma','Tohma') + '.png'
+                                 );
   var r = Math.min(img.width/canvas.width, img.height/canvas.height);
   context.drawImage(img, (img.width-r*canvas.width)/2, (img.height-r*canvas.height)/2, r*canvas.width, r*canvas.height, 0, 0, canvas.width, canvas.height);
 
