@@ -443,14 +443,22 @@ async function print_build_card () {
     if ( e ) calcByHash[key] = e.value;
   }
   document.getElementById('main').innerHTML = '';
-  // TODO improve performance
-  for ( var key in build_card ) {
+
+  let keys = Object.keys(build_card);
+  let cvs = [];
+  var defaultCalcBy = create_calcBySelectList().value;
+  for ( var i=0; i<keys.length; ++i ) {
+    key = keys[i];
+    if ( !calcByHash[key] ) calcByHash[key] = defaultCalcBy;
+    cvs.push(create_build_card_canvas(key));
+  }
+  cvs = await Promise.all(cvs);
+  for ( var i=0; i<keys.length; ++i ) {
+    key = keys[i];
     document.getElementById('main').appendChild(document.createTextNode(key));
     document.getElementById('main').appendChild(create_calcBySelectList(key));
-    if ( !calcByHash[key] ) calcByHash[key] = document.getElementById( key + '-calcBy').value;
     document.getElementById('main').appendChild(document.createElement('hr'));
-    var cvs = await create_build_card_canvas(key);
-    document.getElementById('main').appendChild(cvs);
+    document.getElementById('main').appendChild(cvs[i]);
     document.getElementById('main').appendChild(document.createElement('hr'));
   }
 }
