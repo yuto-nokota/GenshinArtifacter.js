@@ -739,9 +739,11 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   context.textAlign = 'right';
   context.fillText(calcBy,canvas.width-15,canvas.height-15);
 
+  var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + midground + ')';
   context.fillRoundRect = fillRoundRect;
   context.fillRoundRect(0,canvas.height-55,canvas.width, 55, 10);
+  context.fillStyle = fillStyleOrg;
 
   context.textAlign = 'left';
   context.font = '10px serif';
