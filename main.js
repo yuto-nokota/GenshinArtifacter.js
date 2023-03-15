@@ -679,6 +679,7 @@ async function create_character_canvas(charName) {
   // load images
   let img = [];
   for ( var i=0; i<3; i++ ) {
+    var character = characters[charNameHash[charName]];
     img.push(getImageFromURL( 'https://enka.network/ui/' + character.Skills[character.SkillOrder[i]] + '.png' ) );
   }
   // TODO How can I get character URL ?
@@ -687,7 +688,7 @@ async function create_character_canvas(charName) {
                                    + charNameEn[charNameEn.length-1].replace('Thoma','Tohma') + '.png'
                           )
           );
-  await Promise.all( img );
+  img = await await Promise.all( img );
 
   var r = Math.min(img[3].width/canvas.width, img[3].height/canvas.height);
   context.drawImage(img[3], (img[3].width-r*canvas.width)/2, (img[3].height-r*canvas.height)/2, r*canvas.width, r*canvas.height, 0, 0, canvas.width, canvas.height);
@@ -700,7 +701,6 @@ async function create_character_canvas(charName) {
     context.arc(55,395+100*i,25,0,Math.PI*2,false);
     context.fill();
     context.fillStyle = fillStyleOrg;
-    var character = characters[charNameHash[charName]];
     context.drawImage(img[i],30,360+100*i,50,50);
     context.font = '20px serif';
     var fillStyleOrg = context.fillStyle;
@@ -827,17 +827,17 @@ async function create_build_card_canvas ( charName ) {
 
   // load images
   let img = []; 
-  img.push(getImageFromURL('https://enka.network/img/overlay.jpg'));
-  img.push(getImageFromURL('https://enka.network/svg/Shade.svg'));
-  img.push(getImageFromCanvas(await create_character_canvas(charName)));
-  img.push(getImageFromCanvas(create_prop_canvas(build_card[charName].prop)));
+  img.push(getImageFromURL('https://enka.network/img/overlay.jpg')); // 0
+  img.push(getImageFromURL('https://enka.network/svg/Shade.svg'));  // 1
+  img.push(getImageFromCanvas(await create_character_canvas(charName))); //2
+  img.push(getImageFromCanvas(create_prop_canvas(build_card[charName].prop))); //
   img.push(getImageFromCanvas(await create_weapon_canvas(build_card[charName]["武器"])));
   img.push(getImageFromCanvas(create_artifactset_canvas(build_card[charName]["セット効果"])));
   img.push(getImageFromCanvas(create_totalScore_canvas(build_card[charName].totalScore,calcByHash[charName])));
   for ( var i=0; i<equipTypeList.length; ++i ) {
     img.push(getImageFromCanvas(await create_single_artifact_canvas(build_card[charName][equipTypeList[i]],calcByHash[charName])));
   }
-  await Promise.all( img );
+  img = await Promise.all( img );
 
   var r = Math.min(img[0].width/canvas.width, img[0].height/canvas.height);
   context.drawImage(img[0], (img[0].width-r*canvas.width)/2, (img[0].height-r*canvas.height)/2, r*canvas.width, r*canvas.height, 0, 0, canvas.width, canvas.height);
@@ -856,12 +856,12 @@ async function create_build_card_canvas ( charName ) {
 
   context.drawImage(img[2],0,0);
   context.drawImage(img[3],760,30);
-  context.drawImage(img[5],1420,30);
-  context.drawImage(img[6],1420,220);
-  context.drawImage(img[7],1420,340);
+  context.drawImage(img[4],1420,30);
+  context.drawImage(img[5],1420,220);
+  context.drawImage(img[6],1420,340);
   var interval = ( canvas.width - 360 * equipTypeList.length -70 ) / ( equipTypeList.length - 1 ) + 360;
   for ( var i=0; i<equipTypeList.length; ++i ) {
-    context.drawImage(img[8+i],30+interval*i,645);
+    context.drawImage(img[7+i],30+interval*i,645);
   }
   return canvas;
 }
