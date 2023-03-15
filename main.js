@@ -470,7 +470,7 @@ function fillRoundRect(x, y, w, h, r) {
 }
 
 const forground = [ 255, 255, 255, 1.0];
-const midground = [   0,   0,   0, 0.1];
+const midground = [   0,   0,   0, 0.4];
 const background =[   0,   0,   0, 1.0];
 const elementColor = {
   "Ice"      : [   0, 192, 255, 0.5],
@@ -571,6 +571,12 @@ async function create_weapon_canvas ( weapon ) {
   context.font = '30px serif';
   context.textAlign = 'left';
   context.fillText(weapon["名前"],160,50)
+
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [0,0,0,0.5] + ')';
+  context.fillRect(160,54,80,32); 
+  context.fillStyle = fillStyleOrg;
+
   context.fillText(weapon["レベル"],160,80)
 
   context.font = '25px serif';
@@ -679,41 +685,23 @@ async function create_character_canvas(charName) {
   var r = Math.min(img.width/canvas.width, img.height/canvas.height);
   context.drawImage(img, (img.width-r*canvas.width)/2, (img.height-r*canvas.height)/2, r*canvas.width, r*canvas.height, 0, 0, canvas.width, canvas.height);
 
-  var fillStyleOrg = context.fillStyle;
-  context.fillStyle = 'rgba(' + [0,0,0,0.2] + ')';
-  context.beginPath();
-  context.arc(55,395,25,0,Math.PI*2,false);
-  context.fill();
-  context.fillStyle = fillStyleOrg;
-  var character = characters[charNameHash[charName]];
-  var img = await getImageFromURL( 'https://enka.network/ui/' + character.Skills[character.SkillOrder[0]] + '.png' );
-  context.drawImage(img,30,360,50,50);
-  context.font = '20px serif';
-  context.fillText(build_card[charName]["天賦"]["通常"],30,425)
-
-  var fillStyleOrg = context.fillStyle;
-  context.fillStyle = 'rgba(' + [0,0,0,0.2] + ')';
-  context.beginPath();
-  context.arc(55,495,25,0,Math.PI*2,false);
-  context.fill();
-  context.fillStyle = fillStyleOrg;
-  var character = characters[charNameHash[charName]];
-  var img = await getImageFromURL( 'https://enka.network/ui/' + character.Skills[character.SkillOrder[1]] + '.png' );
-  context.drawImage(img,30,460,50,50);
-  context.font = '20px serif';
-  context.fillText(build_card[charName]["天賦"]["スキル"],30,525)
-
-  var fillStyleOrg = context.fillStyle;
-  context.fillStyle = 'rgba(' + [0,0,0,0.2] + ')';
-  context.beginPath();
-  context.arc(55,595,25,0,Math.PI*2,false);
-  context.fill();
-  context.fillStyle = fillStyleOrg;
-  var character = characters[charNameHash[charName]];
-  var img = await getImageFromURL( 'https://enka.network/ui/' + character.Skills[character.SkillOrder[2]] + '.png' );
-  context.drawImage(img,30,560,50,50);
-  context.font = '20px serif';
-  context.fillText(build_card[charName]["天賦"]["爆発"],30,625)
+  var kindlist = ["通常", "スキル", "爆発"];
+  for ( var i=0; i<3; i++ ) {
+    var fillStyleOrg = context.fillStyle;
+    context.fillStyle = 'rgba(' + [0,0,0,0.2] + ')';
+    context.beginPath();
+    context.arc(55,395+100*i,25,0,Math.PI*2,false);
+    context.fill();
+    context.fillStyle = fillStyleOrg;
+    var character = characters[charNameHash[charName]];
+    var img = await getImageFromURL( 'https://enka.network/ui/' + character.Skills[character.SkillOrder[i]] + '.png' );
+    context.drawImage(img,30,360+100*i,50,50);
+    context.font = '20px serif';
+    var fillStyleOrg = context.fillStyle;
+    if ( build_card[charName]["天賦"][kindlist[i]] == 'Lv.10' ) context.fillStyle = 'rgba(' + [37,241,248,1.0] + ')';
+    context.fillText(build_card[charName]["天賦"][kindlist[i]],30,425+100*i)
+    context.fillStyle = fillStyleOrg;
+  }
   return canvas;
 }
 
@@ -741,8 +729,13 @@ function create_artifactset_canvas ( artifactSet ) {
   context.font = '25px serif';
   var i=1;
   for ( var key in set ) {
+    var fillStyleOrg = context.fillStyle;
+    context.fillStyle = 'rgba(' + [9,253,0,1.0] + ')';
     context.textAlign = 'left';
     context.fillText(key,110, interval*i )
+    context.fillStyle = 'rgba(' + [0,0,0,0.3] + ')';
+    context.fillRect(canvas.width-50,interval*i-24,30,27); 
+    context.fillStyle = fillStyleOrg;
     context.textAlign = 'right';
     context.fillText(set[key],canvas.width-30, interval*i )
     i++;
@@ -758,7 +751,9 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
   var fillStyleOrg = context.fillStyle;
+  // TODO change color lightly
   context.fillStyle = 'rgba(' + midground + ')';
+  //context.fillStyle = 'rgba(' + [255,255,255,0.2] + ')';
   context.fillRoundRect = fillRoundRect;
   context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
   context.fillStyle = fillStyleOrg;
