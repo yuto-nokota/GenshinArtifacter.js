@@ -465,18 +465,21 @@ async function print_build_card () {
 }
 
 function fillRoundRect(x, y, w, h, r) {
-    this.beginPath();
-    this.moveTo(x + r, y);
-    this.lineTo(x + w - r, y);
-    this.arc(x + w - r, y + r, r, Math.PI * (3/2), 0, false);
-    this.lineTo(x + w, y + h - r);
-    this.arc(x + w - r, y + h - r, r, 0, Math.PI * (1/2), false);
-    this.lineTo(x + r, y + h);       
-    this.arc(x + r, y + h - r, r, Math.PI * (1/2), Math.PI, false);
-    this.lineTo(x, y + r);
-    this.arc(x + r, y + r, r, Math.PI, Math.PI * (3/2), false);
-    this.closePath();
-    this.fill();
+  for ( var i=r.length; i<4; ++i ) {
+    r[i] = r[r.length-1];
+  }
+  this.beginPath();
+  this.moveTo(x + r[0], y);
+  this.lineTo(x + w - r[3], y);
+  if ( r[3] > 0 ) this.arc(x + w - r[3], y + r[3], r[3], Math.PI * (3/2), 0, false);
+  this.lineTo(x + w, y + h - r[2]);
+  if ( r[2] > 0 ) this.arc(x + w - r[2], y + h - r[2], r[2], 0, Math.PI * (1/2), false);
+  this.lineTo(x + r[1], y + h);       
+  if ( r[1] > 0 ) this.arc(x + r[1], y + h - r[1], r[1], Math.PI * (1/2), Math.PI, false);
+  this.lineTo(x, y + r[0]);
+  if ( r[0] > 0 ) this.arc(x + r[0], y + r[0], r[0], Math.PI, Math.PI * (3/2), false);
+  this.closePath();
+  this.fill();
 }
 
 const forground = [ 255, 255, 255, 1.0];
@@ -500,10 +503,10 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
   canvas.style["width"]  = canvas.width;
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
+  context.fillRoundRect = fillRoundRect;
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + midground + ')';
-  context.fillRoundRect = fillRoundRect;
-  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillRoundRect(0,0,canvas.width, canvas.height, [10]);
   context.fillStyle = fillStyleOrg;
   context.fillStyle = 'rgba(' + forground + ')';
 
@@ -542,8 +545,7 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
 
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + midground + ')';
-  context.fillRoundRect = fillRoundRect;
-  context.fillRoundRect(0,canvas.height-45,canvas.width, 45, 10);
+  context.fillRoundRect(0,canvas.height-45,canvas.width, 45, [10]);
   context.fillStyle = fillStyleOrg;
 
   context.font = '25px serif';
@@ -563,10 +565,10 @@ async function create_weapon_canvas ( weapon ) {
   canvas.style["width"]  = canvas.width;
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
+  context.fillRoundRect = fillRoundRect;
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + midground + ')';
-  context.fillRoundRect = fillRoundRect;
-  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillRoundRect(0,0,canvas.width, canvas.height, [10]);
   context.fillStyle = fillStyleOrg;
   context.fillStyle = 'rgba(' + forground + ')';
 
@@ -607,10 +609,10 @@ function create_prop_canvas ( prop ) {
   canvas.style["width"]  = canvas.width;
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
+  context.fillRoundRect = fillRoundRect;
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + midground + ')';
-  context.fillRoundRect = fillRoundRect;
-  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillRoundRect(0,0,canvas.width, canvas.height, [10]);
   context.fillStyle = fillStyleOrg;
   context.fillStyle = 'rgba(' + forground + ')';
 
@@ -760,10 +762,10 @@ function create_artifactset_canvas ( artifactSet ) {
   canvas.style["width"]  = canvas.width;
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
+  context.fillRoundRect = fillRoundRect;
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + midground + ')';
-  context.fillRoundRect = fillRoundRect;
-  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillRoundRect(0,0,canvas.width, canvas.height, [10]);
   context.fillStyle = fillStyleOrg;
   context.fillStyle = 'rgba(' + forground + ')';
 
@@ -798,12 +800,12 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   canvas.style["width"]  = canvas.width;
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
+  context.fillRoundRect = fillRoundRect;
   var fillStyleOrg = context.fillStyle;
   // TODO change color lightly
   context.fillStyle = 'rgba(' + midground + ')';
   //context.fillStyle = 'rgba(' + [255,255,255,0.2] + ')';
-  context.fillRoundRect = fillRoundRect;
-  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillRoundRect(0,0,canvas.width, canvas.height, [10]);
   context.fillStyle = fillStyleOrg;
   context.fillStyle = 'rgba(' + forground + ')';
 
@@ -819,8 +821,7 @@ function create_totalScore_canvas ( totalScore , calcBy) {
 
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + midground + ')';
-  context.fillRoundRect = fillRoundRect;
-  context.fillRoundRect(0,canvas.height-55,canvas.width, 55, 10);
+  context.fillRoundRect(0,canvas.height-55,canvas.width, 55, [10]);
   context.fillStyle = fillStyleOrg;
 
   context.textAlign = 'left';
@@ -859,10 +860,10 @@ async function create_build_card_canvas ( charName ) {
   canvas.style["width"]  = canvas.width;
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
+  context.fillRoundRect = fillRoundRect;
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + background + ')';
-  context.fillRoundRect = fillRoundRect;
-  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillRoundRect(0,0,canvas.width, canvas.height, [10]);
   context.fillStyle = fillStyleOrg;
 
   var equipTypeList = ["花", "羽", "時計","杯","冠"] ;
@@ -887,8 +888,7 @@ async function create_build_card_canvas ( charName ) {
 
   var ec = elementColor[characters[charNameHash[charName]].Element];
   context.fillStyle = 'rgba(' + ( (ec) ? (ec) : [255,255,255,0.5]) + ')';
-  context.fillRoundRect = fillRoundRect;
-  context.fillRoundRect(0,0,canvas.width, canvas.height, 10);
+  context.fillRoundRect(0,0,canvas.width, canvas.height, [10]);
   context.fillStyle = fillStyleOrg;
 
   var r = Math.min(img[1].width/canvas.width, img[1].height/canvas.height);
