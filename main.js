@@ -702,6 +702,7 @@ async function create_character_canvas(charName) {
                                      .replace('Thoma','Tohma')
                                      .replace('Shogun','Shougun')
                                      .replace('Tao','Hutao')
+                                     .replace('Yanfei','Feiyan')
                                    + '.png'
                           )
           );
