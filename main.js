@@ -600,21 +600,22 @@ async function create_weapon_canvas ( weapon ) {
 
   context.font = '30px serif';
   context.textAlign = 'left';
-  context.fillText(weapon["名前"],170,50)
+  context.fillText(weapon["名前"],170,40)
 
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + [0,0,0,0.5] + ')';
-  context.fillRect(170,54,80,32); 
+  context.fillRect(170,44,70,32); 
   context.fillStyle = fillStyleOrg;
 
-  context.fillText(weapon["レベル"],170,80)
+  context.font = '25px serif';
+  context.fillText(weapon["レベル"],170,70)
 
   context.font = '25px serif';
   context.fillText('基礎攻撃力 ' + weapon["基礎攻撃力"],200,110)
   var i=0;
   for ( key in weapon ) {
     if ( keyHash[key] ) continue;
-    context.fillText(key + ' ' + weapon[key],200,135+i*25)
+    context.fillText(key + ' ' + weapon[key],200,145+i*35)
     i++;
   }
   return canvas;
@@ -748,13 +749,14 @@ async function create_character_canvas(charName) {
     context.fillStyle = fillStyleOrg;
   }
 
+  var ec = elementColor[characters[charNameHash[charName]].Element];
   var strokeStyleOrg = context.strokeStyle;
   var lineWidthOrg = context.lineWidth;
-  context.strokeStyle = 'rgba(' + [0,0,255,0.5] + ')';
+  context.strokeStyle = 'rgba(' + ec + ')';
   context.lineWidth = '8';
   for ( i=0; i<build_card[charName]["凸"]; ++i ) {
     context.beginPath();
-    context.arc(canvas.width-30,135+90*i,25,0,Math.PI*2,false);
+    context.arc(canvas.width-35,140+90*i,30,0,Math.PI*2,false);
     //context.fill();
     context.stroke();
   }
@@ -762,14 +764,29 @@ async function create_character_canvas(charName) {
   context.lineWidth = lineWidthOrg;
 
   for ( i=0; i<6; ++i ) {
-    context.drawImage(img[i+4],canvas.width-55,110+90*i,50,50);
+    context.drawImage(img[i+4],canvas.width-65,110+90*i,60,60);
   }
-  context.font = '50px serif';
+
+  var fillStyleOrg = context.fillStyle;
+  var strokeStyleOrg = context.strokeStyle;
+  var lineWidthOrg = context.lineWidth;
+  context.strokeStyle = 'rgba(' + [80,102,112,1.0] + ')';
+  context.lineWidth = '8';
+  context.font = '60px serif';
   context.textAlign = 'right';
   for ( i=build_card[charName]["凸"]; i<6; ++i ) {
-    context.fillText("×" ,canvas.width-5,160+90*i);
+    context.fillStyle = 'rgba(' + [0,0,0,0.3] + ')';
+    context.beginPath();
+    context.arc(canvas.width-35,140+90*i,30,0,Math.PI*2,false);
+    context.fill();
+    context.stroke();
+    context.fillStyle = 'rgba(' + [255,255,255,1.0] + ')';
+    context.fillText("×" ,canvas.width-5,165+90*i);
   }
   context.textAlign = 'left';
+  context.fillStyle = fillStyleOrg;
+  context.strokeStyle = strokeStyleOrg;
+  context.lineWidth = lineWidthOrg;
 
   return canvas;
 }
@@ -802,8 +819,8 @@ function create_artifactset_canvas ( artifactSet ) {
     context.fillStyle = 'rgba(' + [9,253,0,1.0] + ')';
     context.textAlign = 'left';
     context.fillText(key,110, interval*i )
-    context.fillStyle = 'rgba(' + [0,0,0,0.3] + ')';
-    context.fillRect(canvas.width-50,interval*i-24,30,27); 
+    context.fillStyle = 'rgba(' + [0,0,0,0.5] + ')';
+    context.fillRect(canvas.width-60,interval*i-24,50,27); 
     context.fillStyle = fillStyleOrg;
     context.textAlign = 'right';
     context.fillText(set[key],canvas.width-30, interval*i )
