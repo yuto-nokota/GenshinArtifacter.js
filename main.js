@@ -700,12 +700,6 @@ async function create_character_canvas(charName) {
   canvas.style["width"]  = canvas.width;
   canvas.style["height"] = canvas.height;
   var context = canvas.getContext('2d');
-  context.fillStyle = 'rgba(' + forground + ')';
-  context.font = '50px serif';
-  context.fillText(charName,30,70)
-  context.font = '25px serif';
-  context.fillText(build_card[charName]["レベル"],30,105)
-  context.fillText("好感度" + build_card[charName]["好感度"],105,105)
 
   var character = characters[charNameHash[charName]];
 
@@ -732,6 +726,13 @@ async function create_character_canvas(charName) {
 
   var r = Math.min(img[3].width/canvas.width, img[3].height/canvas.height);
   context.drawImage(img[3], (img[3].width-r*canvas.width)/2, (img[3].height-r*canvas.height)/2, r*canvas.width, r*canvas.height, 0, 0, canvas.width, canvas.height);
+
+  context.fillStyle = 'rgba(' + forground + ')';
+  context.font = '50px serif';
+  context.fillText(charName,30,70)
+  context.font = '25px serif';
+  context.fillText(build_card[charName]["レベル"],30,105)
+  context.fillText("好感度" + build_card[charName]["好感度"],105,105)
 
   var kindlist = ["通常", "スキル", "爆発"];
   for ( var i=0; i<3; i++ ) {
