@@ -545,7 +545,7 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
 
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + midground + ')';
-  context.fillRoundRect(0,canvas.height-45,canvas.width, 45, [10]);
+  context.fillRoundRect(0,canvas.height-45,canvas.width, 45, [0,10,10,0]);
   context.fillStyle = fillStyleOrg;
 
   context.font = '25px serif';
@@ -577,19 +577,37 @@ async function create_weapon_canvas ( weapon ) {
   //context.drawImage(img,10,30,150,150)
   context.drawImage(img,10,40,r*img.width,r*img.height)
 
+  var strokeStyleOrg = context.strokeStyle;
+  var lineWidthOrg = context.lineWidth;
+
+  context.strokeStyle = 'rgba(' + [77,113,129,1.0] + ')';
+  context.lineWidth = '2';
+  context.beginPath();
+  context.moveTo(160,10);
+  context.lineTo(160,canvas.height-10);
+  context.stroke();
+
+  context.strokeStyle = strokeStyleOrg;
+  context.lineWidth = lineWidthOrg;
+
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [0,0,0,0.5] + ')';
+  context.fillRect(9,9,142,27); 
+  context.fillStyle = fillStyleOrg;
+
   context.font = '25px serif';
   context.fillText('精錬ランク' + weapon["精錬ランク"],10,35)
 
   context.font = '30px serif';
   context.textAlign = 'left';
-  context.fillText(weapon["名前"],160,50)
+  context.fillText(weapon["名前"],170,50)
 
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + [0,0,0,0.5] + ')';
-  context.fillRect(160,54,80,32); 
+  context.fillRect(170,54,80,32); 
   context.fillStyle = fillStyleOrg;
 
-  context.fillText(weapon["レベル"],160,80)
+  context.fillText(weapon["レベル"],170,80)
 
   context.font = '25px serif';
   context.fillText('基礎攻撃力 ' + weapon["基礎攻撃力"],200,110)
@@ -717,16 +735,16 @@ async function create_character_canvas(charName) {
   var kindlist = ["通常", "スキル", "爆発"];
   for ( var i=0; i<3; i++ ) {
     var fillStyleOrg = context.fillStyle;
-    context.fillStyle = 'rgba(' + [0,0,0,0.2] + ')';
+    context.fillStyle = 'rgba(' + [0,0,0,1.0] + ')';
     context.beginPath();
-    context.arc(55,395+100*i,25,0,Math.PI*2,false);
+    context.arc(55,375+105*i,34,0,Math.PI*2,false);
     context.fill();
     context.fillStyle = fillStyleOrg;
-    context.drawImage(img[i],30,360+100*i,50,50);
+    context.drawImage(img[i],30,350+105*i,50,50);
     context.font = '20px serif';
     var fillStyleOrg = context.fillStyle;
     if ( build_card[charName]["天賦"][kindlist[i]] == 'Lv.10' ) context.fillStyle = 'rgba(' + [37,241,248,1.0] + ')';
-    context.fillText(build_card[charName]["天賦"][kindlist[i]],30,425+100*i)
+    context.fillText(build_card[charName]["天賦"][kindlist[i]],30,415+105*i)
     context.fillStyle = fillStyleOrg;
   }
 
@@ -803,10 +821,8 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   var context = canvas.getContext('2d');
   context.fillRoundRect = fillRoundRect;
   var fillStyleOrg = context.fillStyle;
-  // TODO change color lightly
-  context.fillStyle = 'rgba(' + midground + ')';
-  //context.fillStyle = 'rgba(' + [255,255,255,0.2] + ')';
-  context.fillRoundRect(0,0,canvas.width, canvas.height, [10]);
+  context.fillStyle = 'rgba(' + [255,255,255,0.2] + ')';
+  context.fillRoundRect(0,0,canvas.width, canvas.height-55, [10,0,0,10]);
   context.fillStyle = fillStyleOrg;
   context.fillStyle = 'rgba(' + forground + ')';
 
@@ -816,14 +832,15 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   context.font = '70px serif';
   context.textAlign = 'center';
   context.fillText(totalScore[calcBy],canvas.width/2,(canvas.height-55)/2+35);
-  context.font = '30px serif';
-  context.textAlign = 'right';
-  context.fillText(calcBy,canvas.width-15,canvas.height-15);
 
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + midground + ')';
-  context.fillRoundRect(0,canvas.height-55,canvas.width, 55, [10]);
+  context.fillRoundRect(0,canvas.height-55,canvas.width, 55, [0,10,10,0]);
   context.fillStyle = fillStyleOrg;
+
+  context.font = '30px serif';
+  context.textAlign = 'right';
+  context.fillText(calcBy,canvas.width-15,canvas.height-15);
 
   context.textAlign = 'left';
   context.font = '10px serif';
@@ -831,8 +848,11 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   context.font = '20px serif';
   context.fillText("Enka.Network",30,220)
 
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [77,199,200,1.0] + ')';
   context.font = '25px serif';
   context.fillText("Artifacter",15,270)
+  context.fillStyle = fillStyleOrg;
 
   return canvas;
 }
@@ -874,12 +894,12 @@ async function create_build_card_canvas ( charName ) {
   img.push(getImageFromURL('https://enka.network/img/overlay.jpg')); // 0
   img.push(getImageFromURL('https://enka.network/svg/Shade.svg'));  // 1
   img.push(getImageFromCanvas(await create_character_canvas(charName))); //2
-  img.push(getImageFromCanvas(create_prop_canvas(build_card[charName].prop))); //
-  img.push(getImageFromCanvas(await create_weapon_canvas(build_card[charName]["武器"])));
-  img.push(getImageFromCanvas(create_artifactset_canvas(build_card[charName]["セット効果"])));
-  img.push(getImageFromCanvas(create_totalScore_canvas(build_card[charName].totalScore,calcByHash[charName])));
+  img.push(getImageFromCanvas(create_prop_canvas(build_card[charName].prop))); // 3
+  img.push(getImageFromCanvas(await create_weapon_canvas(build_card[charName]["武器"]))); //4
+  img.push(getImageFromCanvas(create_artifactset_canvas(build_card[charName]["セット効果"]))); //5
+  img.push(getImageFromCanvas(create_totalScore_canvas(build_card[charName].totalScore,calcByHash[charName]))); //6
   for ( var i=0; i<equipTypeList.length; ++i ) {
-    img.push(getImageFromCanvas(await create_single_artifact_canvas(build_card[charName][equipTypeList[i]],calcByHash[charName])));
+    img.push(getImageFromCanvas(await create_single_artifact_canvas(build_card[charName][equipTypeList[i]],calcByHash[charName]))); // 7 - 11
   }
   img = await Promise.all( img );
 
@@ -894,6 +914,11 @@ async function create_build_card_canvas ( charName ) {
 
   var r = Math.min(img[1].width/canvas.width, img[1].height/canvas.height);
   context.drawImage(img[1], 0, 0, img[1].width * canvas.height / img[1].height, canvas.height);
+
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [255,255,255,0.15] + ')';
+  context.fillRect(0,0,canvas.width, canvas.height);
+  context.fillStyle = fillStyleOrg;
 
   context.fillStyle = 'rgba(' + forground + ')';
 
