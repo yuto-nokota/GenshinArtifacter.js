@@ -424,6 +424,7 @@ async function parse_data ( data ) {
           "名前" : equipName,
           "レベル" : 'Lv.' + equip.weapon.level,
           "精錬ランク" : affixRank,
+          "星" : equip.flat.rankLevel,
         };
         build_card[charName]["武器"].iconURL = 'https://enka.network/ui/' + equip.flat.icon + '.png';
         for ( var wStats of equip.flat.weaponStats ) {
@@ -638,7 +639,14 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
 }
 
 async function create_weapon_canvas ( weapon ) {
-  const keyHash = { "名前" : true, "レベル": true, "精錬ランク": true, "基礎攻撃力" : true, "iconURL" : true };
+  const keyHash = { 
+    "名前" : true, 
+    "レベル": true, 
+    "精錬ランク": true, 
+    "基礎攻撃力" : true, 
+    "iconURL" : true , 
+    "★" : true
+  };
   let canvas = document.createElement('canvas');
   canvas.width  = 465;
   canvas.height = 180;
@@ -677,6 +685,27 @@ async function create_weapon_canvas ( weapon ) {
 
   context.font = '25px serif';
   context.fillText('精錬ランク' + weapon["精錬ランク"],10,35)
+
+  var fillStyleOrg = context.fillStyle;
+  const gradient = context.createLinearGradient(0,0,0,180);
+  gradient.addColorStop(0.0, 'rgba(' + [255,255,255,0.0] + ')');
+  gradient.addColorStop(160/180, 'rgba(' + [110,55,184,0.0] + ')');
+  gradient.addColorStop(165/180, 'rgba(' + [110,55,184,1.0] + ')');
+  gradient.addColorStop(170/180, 'rgba(' + [110,55,184,0.0] + ')');
+  gradient.addColorStop(1.0, 'rgba(' + [255,255,255,0.0] + ')');
+  context.fillStyle = gradient;
+  //context.fillRect(15,160,130,10);
+  context.beginPath();
+  context.ellipse(80,165,65,5,0,0,Math.PI*2,false);
+  context.fill();
+  context.fillStyle = fillStyleOrg;
+
+  context.font = '25px serif';
+  context.textAlign = 'center';
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + [255,204,0,1.0] + ')';
+  context.fillText('★'.repeat(weapon["星"]),80,canvas.height-10)
+  context.fillStyle = fillStyleOrg;
 
   context.font = '30px serif';
   context.textAlign = 'left';
