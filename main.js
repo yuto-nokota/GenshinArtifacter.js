@@ -273,6 +273,7 @@ async function parse_data ( data ) {
     console.log("timeout_counter = " + timeout_counter );
     return;
   }
+  build_card = {};
   characters = store_json['characters.json'];
   loc = store_json['loc.json'];
   affixes = store_json['affixes.json'];
