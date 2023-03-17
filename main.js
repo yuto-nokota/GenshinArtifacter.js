@@ -456,10 +456,12 @@ async function print_build_card () {
   cvs = await Promise.all(cvs);
   for ( var i=0; i<keys.length; ++i ) {
     key = keys[i];
+    await cvs[i];
+    var c = cvs[i];
     document.getElementById('main').appendChild(document.createTextNode(key));
     document.getElementById('main').appendChild(create_calcBySelectList(key));
     document.getElementById('main').appendChild(document.createElement('hr'));
-    document.getElementById('main').appendChild(cvs[i]);
+    document.getElementById('main').appendChild(c);
     document.getElementById('main').appendChild(document.createElement('hr'));
   }
 }
@@ -690,6 +692,10 @@ function __getImageFromURL ( url ) {
     image.onerror = (e) => reject(e);
     image.src = url;
     image.crossOrigin = 'anonymous';
+  })
+  .catch ( () => {
+    console.log( 'Failed to load ' + url );
+    return new Image();
   });
 }
 
