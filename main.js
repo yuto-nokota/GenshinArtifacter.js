@@ -597,37 +597,39 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
   context.fillRoundRect(0,canvas.height-45,canvas.width, 45, [0,10,10,0]);
   context.fillStyle = fillStyleOrg;
 
-  context.font = '25px serif';
-  context.textAlign = 'right';
-  context.fillText('Score', canvas.width-90, canvas.height-10);
-  context.font = '35px serif';
-  context.fillText(artifacts["Score"][calcBy], canvas.width-15, canvas.height-10);
+  if ( subpropnameList.length > 0 ) {
+    context.font = '25px serif';
+    context.textAlign = 'right';
+    context.fillText('Score', canvas.width-90, canvas.height-10);
+    context.font = '35px serif';
+    context.fillText(artifacts["Score"][calcBy], canvas.width-15, canvas.height-10);
 
-  context.font = 'italic bold 40px serif';
-  context.textAlign = 'left';
-  var fillStyleOrg = context.fillStyle;
-  var strokeStyleOrg = context.strokeStyle;
-  var lineWidthOrg = context.lineWidth;
-  context.lineWidth = 2;
-  for ( var tier of ["SS", "S", "A", "B" ] ) {
-    if ( artifacts["Score"][calcBy] >= tierTable[artifacts["部位"]][tier] ) {
-      const gradient = context.createLinearGradient(0,0,0,415);
-      gradient.addColorStop(0.0, 'rgba(' + [255,255,255,1.0] + ')');
-      gradient.addColorStop(375/415, 'rgba(' + [255,255,255,1.0] + ')');
-      gradient.addColorStop(390/415, 'rgba(' + tierColor[tier] + ')');
-      gradient.addColorStop(405/415, 'rgba(' + [255,255,255,1.0] + ')');
-      gradient.addColorStop(1.0, 'rgba(' + [255,255,255,1.0] + ')');
-      context.fillStyle = gradient;
-      context.strokeStyle = 'rgba(' + tierColor[tier] + ')';
-      context.beginPath();
-      context.fillText(tier, 60, canvas.height-10);
-      context.stroke();
-      break;
+    context.font = 'italic bold 40px serif';
+    context.textAlign = 'left';
+    var fillStyleOrg = context.fillStyle;
+    var strokeStyleOrg = context.strokeStyle;
+    var lineWidthOrg = context.lineWidth;
+    context.lineWidth = 2;
+    for ( var tier of ["SS", "S", "A", "B" ] ) {
+      if ( artifacts["Score"][calcBy] >= tierTable[artifacts["部位"]][tier] ) {
+        const gradient = context.createLinearGradient(0,0,0,415);
+        gradient.addColorStop(0.0, 'rgba(' + [255,255,255,1.0] + ')');
+        gradient.addColorStop(375/415, 'rgba(' + [255,255,255,1.0] + ')');
+        gradient.addColorStop(390/415, 'rgba(' + tierColor[tier] + ')');
+        gradient.addColorStop(405/415, 'rgba(' + [255,255,255,1.0] + ')');
+        gradient.addColorStop(1.0, 'rgba(' + [255,255,255,1.0] + ')');
+        context.fillStyle = gradient;
+        context.strokeStyle = 'rgba(' + tierColor[tier] + ')';
+        context.beginPath();
+        context.fillText(tier, 60, canvas.height-10);
+        context.stroke();
+        break;
+      }
     }
+    context.fillStyle = fillStyleOrg;
+    context.strokeStyle = strokeStyleOrg;
+    context.lineWidth = lineWidthOrg;
   }
-  context.fillStyle = fillStyleOrg;
-  context.strokeStyle = strokeStyleOrg;
-  context.lineWidth = lineWidthOrg;
 
   return canvas;
 }
