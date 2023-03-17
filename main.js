@@ -644,8 +644,8 @@ async function create_weapon_canvas ( weapon ) {
     "レベル": true, 
     "精錬ランク": true, 
     "基礎攻撃力" : true, 
-    "iconURL" : true , 
-    "★" : true
+    "iconURL" : true, 
+    "星" : true,
   };
   let canvas = document.createElement('canvas');
   canvas.width  = 465;
