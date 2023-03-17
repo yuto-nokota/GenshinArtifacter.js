@@ -298,10 +298,13 @@ async function parse_data ( data ) {
     build_card[charName]["天賦"]["通常"]   = 'Lv.' + avatarInfo.skillLevelMap[characters[id].SkillOrder[0]];
     build_card[charName]["天賦"]["スキル"] = 'Lv.' + avatarInfo.skillLevelMap[characters[id].SkillOrder[1]];
     build_card[charName]["天賦"]["爆発"]   = 'Lv.' + avatarInfo.skillLevelMap[characters[id].SkillOrder[2]];
-    //   TODO parse Prop
+    //   parse Prop
     build_card[charName]["レベル"] = 'Lv.' + avatarInfo.propMap[4001].val;
     build_card[charName]["好感度"] = avatarInfo.fetterInfo.expLevel;
     build_card[charName]["凸"] = (avatarInfo.talentIdList) ? (avatarInfo.talentIdList.length ) : 0;
+    build_card[charName]["元素"] = characters[id].Element;
+    build_card[charName].iconURL = characters[id].SideIconName
+      .replace('UI_AvatarIcon_Side_','https://enka.network/ui/UI_Gacha_AvatarImg_') + '.png';
     // parse fight properties
     //   parse HP
     var MaxHP   = Math.floor( avatarInfo.fightPropMap[2000] + 0.5 );
@@ -790,16 +793,18 @@ async function create_character_canvas(charName) {
     img.push(getImageFromURL( 'https://enka.network/ui/' + character.Skills[character.SkillOrder[i]] + '.png' ) );
   }
   // TODO How can I get character URL ?
-  var charNameEn = loc["en"][characters[charNameHash[charName]].NameTextMapHash].split(' ');
-  img.push(getImageFromURL('https://enka.network/ui/UI_Gacha_AvatarImg_' 
-                                   + charNameEn[charNameEn.length-1]
-                                     .replace('Thoma','Tohma')
-                                     .replace('Shogun','Shougun')
-                                     .replace('Tao','Hutao')
-                                     .replace('Yanfei','Feiyan')
-                                   + '.png'
-                          )
-          );
+  //var charNameEn = loc["en"][characters[charNameHash[charName]].NameTextMapHash].split(' ');
+  //img.push(getImageFromURL('https://enka.network/ui/UI_Gacha_AvatarImg_' 
+  //                                 + charNameEn[charNameEn.length-1]
+  //                                   .replace('Thoma','Tohma')
+  //                                   .replace('Shogun','Shougun')
+  //                                   .replace('Tao','Hutao')
+  //                                   .replace('Yanfei','Feiyan')
+  //                                   .replace('Alhaitham','Alhatham')
+  //                                 + '.png'
+  //                        )
+  //        );
+  img.push(getImageFromURL(build_card[charName].iconURL)); 
   for ( i=0; i<6; ++i ) {
     img.push(getImageFromURL( 'https://enka.network/ui/' + character.Consts[i] + '.png' ) );
   }
@@ -831,7 +836,7 @@ async function create_character_canvas(charName) {
     context.fillStyle = fillStyleOrg;
   }
 
-  var ec = elementColor[characters[charNameHash[charName]].Element];
+  var ec = elementColor[build_card[charName]["元素"]];
   var strokeStyleOrg = context.strokeStyle;
   var lineWidthOrg = context.lineWidth;
   context.strokeStyle = 'rgba(' + ec + ')';
@@ -1036,7 +1041,7 @@ async function create_build_card_canvas ( charName ) {
   context.drawImage(img[0], (img[0].width-r*canvas.width)/2, (img[0].height-r*canvas.height)/2, r*canvas.width, r*canvas.height, 0, 0, canvas.width, canvas.height);
 
 
-  var ec = elementColor[characters[charNameHash[charName]].Element];
+  var ec = elementColor[build_card[charName]["元素"]];
   context.fillStyle = 'rgba(' + ( (ec) ? (ec) : [255,255,255,0.5]) + ')';
   context.fillRoundRect(0,0,canvas.width, canvas.height, [10]);
   context.fillStyle = fillStyleOrg;
