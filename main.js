@@ -559,6 +559,11 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
   context.fillStyle = fillStyleOrg;
   context.fillStyle = 'rgba(' + forground + ')';
 
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + midground + ')';
+  context.fillRoundRect(0,canvas.height-45,canvas.width, 45, [0,10,10,0]);
+  context.fillStyle = fillStyleOrg;
+
   if ( !artifacts ) return canvas;
   var img = await getImageFromURL( artifacts.iconURL);
   var r = Math.min ( 175 / ( img.width * 0.75 ),  200 / (img.height * 0.80 ) );
@@ -591,11 +596,6 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
     context.font = '15px serif';
     context.fillText(sub["上昇値"].join('+'),canvas.width-15,210+50*i);
   }
-
-  var fillStyleOrg = context.fillStyle;
-  context.fillStyle = 'rgba(' + midground + ')';
-  context.fillRoundRect(0,canvas.height-45,canvas.width, 45, [0,10,10,0]);
-  context.fillStyle = fillStyleOrg;
 
   if ( subpropnameList.length > 0 ) {
     context.font = '25px serif';
