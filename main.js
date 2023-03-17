@@ -498,6 +498,52 @@ const elementColor = {
   "None"     : [ 100, 100, 100, 0.5],
 }
 
+const tierColor = {
+  "SS" : [ 254, 132, 200, 1.0],
+  "S"  : [ 146, 255,  99, 1.0],
+  "A"  : [ 255,  90,  90, 1.0],
+  "B"  : [ 255, 227,  97, 1.0],
+}
+
+const tierTable = {
+  "total": {
+    "SS": 220,
+    "S" : 200,
+    "A" : 180,
+    "B" :   0,
+  },
+  "花": {
+    "SS": 50,
+    "S" : 45,
+    "A" : 40,
+    "B" :  0,
+  },
+  "羽": {
+    "SS": 50,
+    "S" : 45,
+    "A" : 40,
+    "B" :  0,
+  },
+  "時計": {
+    "SS": 45,
+    "S" : 40,
+    "A" : 35,
+    "B" :  0,
+  },
+  "杯": {
+    "SS": 45,
+    "S" : 40,
+    "A" : 37,
+    "B" :  0,
+  },
+  "冠": {
+    "SS": 40,
+    "S" : 35,
+    "A" : 30,
+    "B" :  0,
+  },
+}
+
 async function create_single_artifact_canvas ( artifacts, calcBy ) {
   let canvas = document.createElement('canvas');
   canvas.width  = 360;
@@ -555,6 +601,32 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
   context.fillText('Score', canvas.width-90, canvas.height-10);
   context.font = '35px serif';
   context.fillText(artifacts["Score"][calcBy], canvas.width-15, canvas.height-10);
+
+  context.font = 'italic bold 40px serif';
+  context.textAlign = 'left';
+  var fillStyleOrg = context.fillStyle;
+  var strokeStyleOrg = context.strokeStyle;
+  var lineWidthOrg = context.lineWidth;
+  context.lineWidth = 2;
+  for ( var tier of ["SS", "S", "A", "B" ] ) {
+    if ( artifacts["Score"][calcBy] >= tierTable[artifacts["部位"]][tier] ) {
+      const gradient = context.createLinearGradient(0,0,0,415);
+      gradient.addColorStop(0.0, 'rgba(' + [255,255,255,1.0] + ')');
+      gradient.addColorStop(375/415, 'rgba(' + [255,255,255,1.0] + ')');
+      gradient.addColorStop(390/415, 'rgba(' + tierColor[tier] + ')');
+      gradient.addColorStop(405/415, 'rgba(' + [255,255,255,1.0] + ')');
+      gradient.addColorStop(1.0, 'rgba(' + [255,255,255,1.0] + ')');
+      context.fillStyle = gradient;
+      context.strokeStyle = 'rgba(' + tierColor[tier] + ')';
+      context.beginPath();
+      context.fillText(tier, 60, canvas.height-10);
+      context.stroke();
+      break;
+    }
+  }
+  context.fillStyle = fillStyleOrg;
+  context.strokeStyle = strokeStyleOrg;
+  context.lineWidth = lineWidthOrg;
 
   return canvas;
 }
@@ -877,6 +949,36 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   context.font = '25px serif';
   context.fillText("Artifacter",15,270)
   context.fillStyle = fillStyleOrg;
+
+  var fillStyleOrg = context.fillStyle;
+  context.fillStyle = 'rgba(' + midground + ')';
+  context.fillRoundRect(canvas.width-100,0,100,70, [0,10,0,10]);
+  context.fillStyle = fillStyleOrg;
+
+  context.textAlign = 'center';
+  context.font = 'italic bold 50px serif';
+  var fillStyleOrg = context.fillStyle;
+  var strokeStyleOrg = context.strokeStyle;
+  var lineWidthOrg = context.lineWidth;
+  context.lineWidth = 2;
+  for ( var tier of ["SS", "S", "A", "B" ] ) {
+    if ( totalScore[calcBy] >= tierTable["total"][tier] ) {
+      const gradient = context.createLinearGradient(0,0,0,290);
+      gradient.addColorStop(0.0, 'rgba(' + [255,255,255,1.0] + ')');
+      gradient.addColorStop(20/290, 'rgba(' + [255,255,255,1.0] + ')');
+      gradient.addColorStop(40/290, 'rgba(' + tierColor[tier] + ')');
+      gradient.addColorStop(55/290, 'rgba(' + [255,255,255,1.0] + ')');
+      gradient.addColorStop(1.0, 'rgba(' + [255,255,255,1.0] + ')');
+      context.fillStyle = gradient;
+      context.strokeStyle = 'rgba(' + tierColor[tier] + ')';
+      //context.fillStyle = 'rgba(' + tierColor[tier] + ')';
+      context.fillText(tier, canvas.width-50, 55);
+      break;
+    }
+  }
+  context.fillStyle = fillStyleOrg;
+  context.strokeStyle = strokeStyleOrg;
+  context.lineWidth = lineWidthOrg;
 
   return canvas;
 }
