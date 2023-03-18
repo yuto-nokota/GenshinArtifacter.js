@@ -1,5 +1,6 @@
 // Copyright (c) 2023 yuto-nokota. All rights reserved.
 let messages = null;
+const font_common = ' sans-serif ';
 var _GET = (function () {
   var vars = {}; 
   var param = location.search.substring(1).split('&');
@@ -445,7 +446,7 @@ async function parse_data ( data ) {
         for ( var wStats of equip.flat.weaponStats ) {
           var propname = loc_appendix[lang][wStats.appendPropId];
           var propval  = wStats.statValue;
-          build_card[charName]["武器"][propname] = propval;
+          build_card[charName]["武器"][propname] = propval + units[wStats.appendPropId];
         }
       }
     }
@@ -590,11 +591,11 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
   var r = Math.min ( 175 / ( img.width * 0.75 ),  200 / (img.height * 0.80 ) );
   context.drawImage(img,img.width*0.25,img.height*0.2,img.width*0.75,img.height*0.8, 0,0,r*img.width,r*img.height);
 
-  context.font = '30px serif';
+  context.font = '30px ' + font_common;
   context.textAlign = 'right';
   var mainpropname = Object.keys(artifacts["メイン"])[0];
   context.fillText(mainpropname,canvas.width-15,45);
-  context.font = '40px serif';
+  context.font = '40px ' + font_common;
   context.fillText(artifacts["メイン"][mainpropname]["値"],canvas.width-15,85);
 
   var fillStyleOrg = context.fillStyle;
@@ -602,30 +603,30 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
   context.fillRect(canvas.width-61,90,47,30); 
   context.fillStyle = fillStyleOrg;
 
-  context.font = '25px serif';
+  context.font = '25px ' + font_common;
   context.textAlign = 'right';
   context.fillText(artifacts["レベル"],canvas.width-15,115);
 
   var subpropnameList =  Object.keys(artifacts["サブ"]);
   for ( var i=0; i< subpropnameList.length; ++i )  {
-    context.font = '25px serif';
+    context.font = '25px ' + font_common;
     var sub = artifacts["サブ"][subpropnameList[i]];
     context.textAlign = 'left';
     context.fillText(sub["効果名"],50,195+50*i);
     context.textAlign = 'right';
     context.fillText(sub["値"],canvas.width-15,195+50*i);
-    context.font = '15px serif';
+    context.font = '15px ' + font_common;
     context.fillText(sub["上昇値"].join('+'),canvas.width-15,210+50*i);
   }
 
   if ( subpropnameList.length > 0 ) {
-    context.font = '25px serif';
+    context.font = '25px ' + font_common;
     context.textAlign = 'right';
-    context.fillText('Score', canvas.width-90, canvas.height-10);
-    context.font = '35px serif';
+    context.fillText('Score', canvas.width-110, canvas.height-10);
+    context.font = '35px ' + font_common;
     context.fillText(artifacts["Score"][calcBy], canvas.width-15, canvas.height-10);
 
-    context.font = 'italic bold 40px serif';
+    context.font = 'italic bold 40px ' + font_common;
     context.textAlign = 'left';
     var fillStyleOrg = context.fillStyle;
     var strokeStyleOrg = context.strokeStyle;
@@ -679,9 +680,8 @@ async function create_weapon_canvas ( weapon ) {
   context.fillStyle = 'rgba(' + forground + ')';
 
   var img = await getImageFromURL( weapon.iconURL);
-  var r = Math.min ( 140 / img.width ,  140 / img.height ) ;
-  //context.drawImage(img,10,30,150,150)
-  context.drawImage(img,10,40,r*img.width,r*img.height)
+  var r = Math.min ( 160 / img.width ,  160 / img.height ) ;
+  context.drawImage(img,00,20,r*img.width,r*img.height)
 
   var strokeStyleOrg = context.strokeStyle;
   var lineWidthOrg = context.lineWidth;
@@ -698,11 +698,11 @@ async function create_weapon_canvas ( weapon ) {
 
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + [0,0,0,0.5] + ')';
-  context.fillRect(9,9,142,27); 
+  context.fillRect(9,9,35,27); 
   context.fillStyle = fillStyleOrg;
 
-  context.font = '25px serif';
-  context.fillText('精錬ランク' + weapon["精錬ランク"],10,35)
+  context.font = '25px ' + font_common;
+  context.fillText('R' + weapon["精錬ランク"],10,35)
 
   var fillStyleOrg = context.fillStyle;
   const gradient = context.createLinearGradient(0,0,0,180);
@@ -725,7 +725,7 @@ async function create_weapon_canvas ( weapon ) {
   context.fillText('★'.repeat(weapon["星"]),80,canvas.height-10)
   context.fillStyle = fillStyleOrg;
 
-  context.font = '30px serif';
+  context.font = '30px ' + font_common;
   context.textAlign = 'left';
   context.fillText(weapon["名前"],170,40)
 
@@ -734,15 +734,15 @@ async function create_weapon_canvas ( weapon ) {
   context.fillRect(170,44,70,32); 
   context.fillStyle = fillStyleOrg;
 
-  context.font = '25px serif';
+  context.font = '23px ' + font_common;
   context.fillText(weapon["レベル"],170,70)
 
-  context.font = '25px serif';
-  context.fillText('基礎攻撃力 ' + weapon["基礎攻撃力"],200,110)
+  context.font = '23px ' + font_common;
+  context.fillText('基礎攻撃力 ' + weapon["基礎攻撃力"],180,110)
   var i=0;
   for ( key in weapon ) {
     if ( keyHash[key] ) continue;
-    context.fillText(key + ' ' + weapon[key],200,145+i*35)
+    context.fillText(key + ' ' + weapon[key],180,145+i*35)
     i++;
   }
   return canvas;
@@ -766,7 +766,7 @@ function create_prop_canvas ( prop ) {
   var interval = (canvas.height - 25 * Object.keys(prop).length) / ( Object.keys(prop).length + 1) + 25;
   var i=1;
   for ( var key in prop ) {
-    context.font = '25px serif';
+    context.font = '25px ' + font_common;
     context.textAlign = 'left';
     context.fillText(key,80, interval*i )
     context.textAlign = 'right';
@@ -774,7 +774,7 @@ function create_prop_canvas ( prop ) {
     if ( prop[key].base && prop[key].additional ) {
       var fillStyleOrg = context.fillStyle;
       context.fillStyle = 'rgba(' + forground + ')';
-      context.font = '15px serif';
+      context.font = '15px ' + font_common;
       context.fillText(prop[key].base + '+' + prop[key].additional,canvas.width-30, interval*i+20 );
       context.fillStyle = 'rgba(' + [108,223,154,1.0]+ ')';
       context.fillText('+' + prop[key].additional,canvas.width-30, interval*i+20 );
@@ -862,12 +862,13 @@ async function create_character_canvas(charName) {
   context.fill();
 
   context.fillStyle = 'rgba(' + forground + ')';
-  context.font = '50px serif';
+  context.font = '50px ' + font_common;
   context.fillText(charName,30,70)
-  context.font = '25px serif';
+  context.font = '25px ' + font_common;
   context.fillText(build_card[charName]["レベル"],30,105)
   context.fillText("好感度" + build_card[charName]["好感度"],105,105)
 
+  context.textAlign = 'center';
   var kindlist = ["通常", "スキル", "爆発"];
   for ( var i=0; i<3; i++ ) {
     var fillStyleOrg = context.fillStyle;
@@ -877,14 +878,15 @@ async function create_character_canvas(charName) {
     context.fill();
     context.fillStyle = fillStyleOrg;
     context.drawImage(img[i],30,350+105*i,50,50);
-    context.font = 'bold 20px serif';
+    context.font = '20px bold ' + font_common;
     var fillStyleOrg = context.fillStyle;
     var skillLevel = build_card[charName]["天賦"][kindlist[i]].base
                    + build_card[charName]["天賦"][kindlist[i]].extra;
     if ( build_card[charName]["天賦"][kindlist[i]].base == 10 ) context.fillStyle = 'rgba(' + [37,241,248,1.0] + ')';
-    context.fillText('Lv.' + skillLevel,30,415+105*i)
+    context.fillText('Lv.' + skillLevel,55,415+105*i)
     context.fillStyle = fillStyleOrg;
   }
+  context.textAlign = 'center';
 
   var ec = elementColor[build_card[charName]["元素"]];
   var strokeStyleOrg = context.strokeStyle;
@@ -909,8 +911,8 @@ async function create_character_canvas(charName) {
   var lineWidthOrg = context.lineWidth;
   context.strokeStyle = 'rgba(' + [80,102,112,1.0] + ')';
   context.lineWidth = '8';
-  context.font = '60px serif';
-  context.textAlign = 'right';
+  context.font = 'bold 60px ' + font_common
+  context.textAlign = 'center';
   for ( i=build_card[charName]["凸"]; i<6; ++i ) {
     context.fillStyle = 'rgba(' + [0,0,0,0.3] + ')';
     context.beginPath();
@@ -918,7 +920,7 @@ async function create_character_canvas(charName) {
     context.fill();
     context.stroke();
     context.fillStyle = 'rgba(' + [255,255,255,1.0] + ')';
-    context.fillText("×" ,canvas.width-5,165+90*i);
+    context.fillText("×" ,canvas.width-35,165+90*i);
   }
   context.textAlign = 'left';
   context.fillStyle = fillStyleOrg;
@@ -950,7 +952,7 @@ function create_artifactset_canvas ( artifactSet ) {
     }
   }
   var interval = (canvas.height - 25 * Object.keys(set).length) / ( Object.keys(set).length + 1) + 25;
-  context.font = '25px serif';
+  context.font = '25px ' + font_common;
   var i=1;
   for ( var key in set ) {
     var fillStyleOrg = context.fillStyle;
@@ -982,10 +984,10 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   context.fillStyle = fillStyleOrg;
   context.fillStyle = 'rgba(' + forground + ')';
 
-  context.font = '40px serif';
+  context.font = '40px ' + font_common;
   context.textAlign = 'left';
   context.fillText("総合スコア",10,40)
-  context.font = '70px serif';
+  context.font = '70px ' + font_common;
   context.textAlign = 'center';
   context.fillText(totalScore[calcBy],canvas.width/2,(canvas.height-55)/2+35);
 
@@ -994,19 +996,19 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   context.fillRoundRect(0,canvas.height-55,canvas.width, 55, [0,10,10,0]);
   context.fillStyle = fillStyleOrg;
 
-  context.font = '30px serif';
+  context.font = '30px ' + font_common;
   context.textAlign = 'right';
   context.fillText(calcBy,canvas.width-15,canvas.height-15);
 
   context.textAlign = 'left';
-  context.font = '10px serif';
+  context.font = '10px ' + font_common;
   context.fillText("Powered by",30,200)
-  context.font = '20px serif';
+  context.font = '20px ' + font_common;
   context.fillText("Enka.Network",30,220)
 
   var fillStyleOrg = context.fillStyle;
   context.fillStyle = 'rgba(' + [77,199,200,1.0] + ')';
-  context.font = '25px serif';
+  context.font = '25px ' + font_common;
   context.fillText("Artifacter",15,270)
   context.fillStyle = fillStyleOrg;
 
@@ -1016,7 +1018,7 @@ function create_totalScore_canvas ( totalScore , calcBy) {
   context.fillStyle = fillStyleOrg;
 
   context.textAlign = 'center';
-  context.font = 'italic bold 50px serif';
+  context.font = 'italic bold 50px ' + font_common;
   var fillStyleOrg = context.fillStyle;
   var strokeStyleOrg = context.strokeStyle;
   var lineWidthOrg = context.lineWidth;
