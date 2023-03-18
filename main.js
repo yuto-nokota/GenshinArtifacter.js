@@ -851,6 +851,15 @@ async function create_character_canvas(charName) {
 
   var r = Math.min(img[3].width/canvas.width, img[3].height/canvas.height);
   context.drawImage(img[3], (img[3].width-r*canvas.width)/2, (img[3].height-r*canvas.height)/2, r*canvas.width, r*canvas.height, 0, 0, canvas.width, canvas.height);
+  const gradient = context.createRadialGradient(0,-200,0,0,-200,1000);
+  gradient.addColorStop(0.0, 'rgba(' + [0,0,0,1.0] + ')');
+  gradient.addColorStop(0.20, 'rgba(' + [0,0,0,1.0] + ')');
+  gradient.addColorStop(0.5, 'rgba(' + [0,0,0,0.0] + ')');
+  gradient.addColorStop(1.0, 'rgba(' + [0,0,0,0.0] + ')');
+  context.fillStyle = gradient;
+  context.beginPath();
+  context.fillRect(0,0,canvas.width, canvas.height);
+  context.fill();
 
   context.fillStyle = 'rgba(' + forground + ')';
   context.font = '50px serif';
