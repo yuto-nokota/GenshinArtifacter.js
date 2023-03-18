@@ -294,10 +294,20 @@ async function parse_data ( data ) {
     }
     // parse char data
     //   parse skillMap
-    build_card[charName]["天賦"] = {};
-    build_card[charName]["天賦"]["通常"]   = 'Lv.' + avatarInfo.skillLevelMap[characters[id].SkillOrder[0]];
-    build_card[charName]["天賦"]["スキル"] = 'Lv.' + avatarInfo.skillLevelMap[characters[id].SkillOrder[1]];
-    build_card[charName]["天賦"]["爆発"]   = 'Lv.' + avatarInfo.skillLevelMap[characters[id].SkillOrder[2]];
+    // proudSkillExtraLevelMap
+    build_card[charName]["天賦"] = { "通常" : {}, "スキル" : {}, "爆発" : {}};
+    build_card[charName]["天賦"]["通常"].base   = avatarInfo.skillLevelMap[characters[id].SkillOrder[0]];
+    build_card[charName]["天賦"]["スキル"].base = avatarInfo.skillLevelMap[characters[id].SkillOrder[1]];
+    build_card[charName]["天賦"]["爆発"].base   = avatarInfo.skillLevelMap[characters[id].SkillOrder[2]];
+    function skillExtra ( i ) {
+      if ( !avatarInfo.proudSkillExtraLevelMap ) return 0;
+      if ( !avatarInfo.proudSkillExtraLevelMap[characters[id].ProudMap[characters[id].SkillOrder[i]]] ) return 0;
+      return avatarInfo.proudSkillExtraLevelMap[characters[id].ProudMap[characters[id].SkillOrder[i]]];
+    }
+    build_card[charName]["天賦"]["通常"].extra   = skillExtra(0);
+    build_card[charName]["天賦"]["スキル"].extra = skillExtra(1);
+    build_card[charName]["天賦"]["爆発"].extra   = skillExtra(2);
+
     //   parse Prop
     build_card[charName]["レベル"] = 'Lv.' + avatarInfo.propMap[4001].val;
     build_card[charName]["好感度"] = avatarInfo.fetterInfo.expLevel;
@@ -644,8 +654,8 @@ async function create_weapon_canvas ( weapon ) {
     "レベル": true, 
     "精錬ランク": true, 
     "基礎攻撃力" : true, 
-    "iconURL" : true, 
-    "星" : true,
+    "iconURL" : true , 
+    "星" : true
   };
   let canvas = document.createElement('canvas');
   canvas.width  = 465;
@@ -860,8 +870,10 @@ async function create_character_canvas(charName) {
     context.drawImage(img[i],30,350+105*i,50,50);
     context.font = '20px serif';
     var fillStyleOrg = context.fillStyle;
-    if ( build_card[charName]["天賦"][kindlist[i]] == 'Lv.10' ) context.fillStyle = 'rgba(' + [37,241,248,1.0] + ')';
-    context.fillText(build_card[charName]["天賦"][kindlist[i]],30,415+105*i)
+    var skillLevel = build_card[charName]["天賦"][kindlist[i]].base
+                   + build_card[charName]["天賦"][kindlist[i]].extra;
+    if ( build_card[charName]["天賦"][kindlist[i]].base == 10 ) context.fillStyle = 'rgba(' + [37,241,248,1.0] + ')';
+    context.fillText('Lv.' + skillLevel,30,415+105*i)
     context.fillStyle = fillStyleOrg;
   }
 
