@@ -1,4 +1,5 @@
 // Copyright (c) 2023 yuto-nokota. All rights reserved.
+let messages = null;
 var _GET = (function () {
   var vars = {}; 
   var param = location.search.substring(1).split('&');
@@ -41,6 +42,7 @@ function copy_url () {
 
 let data_json = '';
 function load_data ( uid ) {
+  messages.innerHTML += 'Loading data...<br>';
   var xhr = new XMLHttpRequest();
   var url = 'https://enka.network/api/uid/' + uid;
   //var url = './testdata/851415193.json';
@@ -62,6 +64,7 @@ function load_data ( uid ) {
 
 let store_json = {};
 function load_store_json ( fname ) {
+  messages.innerHTML += 'Loading ' + fname + '...<br>';
   var xhr = new XMLHttpRequest();
   var url = 'https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/' + fname;
   //var url = './testdata/' + fname;
@@ -228,6 +231,7 @@ function roundScore ( score ) {
 
 const calcByList = ['攻撃換算', 'HP換算', '防御換算'];
 function create_calcBySelectList ( charName ){
+  messages.innerHTML += 'Creating CalcBy List of ' + charName + '...<br>';
   let select = document.createElement('select');
   select.id   = charName + '-calcBy';
   select.name = charName + '-calcBy';
@@ -267,6 +271,7 @@ let loc = null;
 let affixes = null;
 
 async function parse_data ( data ) {
+  messages.innerHTML += 'Parsing data...<br>';
   let lang = 'ja';
   if ( !(store_json['characters.json'] && store_json['loc.json'] && store_json['affixes.json']) ) {
     if ( --timeout_counter !== 0 ) setTimeout(parse_data,timeout_ms,data);
@@ -454,6 +459,7 @@ async function parse_data ( data ) {
 let calcByHash = {};
 
 async function print_build_card () {
+  messages.innerHTML += 'Printing build card...<br>';
   for ( var key in build_card ) {
     var e = document.getElementById(key+'-calcBy');
     if ( e ) calcByHash[key] = e.value;
@@ -560,6 +566,7 @@ const tierTable = {
 }
 
 async function create_single_artifact_canvas ( artifacts, calcBy ) {
+  messages.innerHTML += 'Creating artifact card of ' + ((artifacts)?(artifacts["部位"]):('null')) + '...<br>';
   let canvas = document.createElement('canvas');
   canvas.width  = 360;
   canvas.height = 415;
@@ -649,6 +656,7 @@ async function create_single_artifact_canvas ( artifacts, calcBy ) {
 }
 
 async function create_weapon_canvas ( weapon ) {
+  messages.innerHTML += 'Creating weapon card of ' + ((weapon)?(weapon["名前"]):('null')) + '...<br>';
   const keyHash = { 
     "名前" : true, 
     "レベル": true, 
@@ -741,6 +749,7 @@ async function create_weapon_canvas ( weapon ) {
 }
 
 function create_prop_canvas ( prop ) {
+  messages.innerHTML += 'Creating fight properties card...<br>'
   let canvas = document.createElement('canvas');
   canvas.width  = 630;
   canvas.height = 600;
@@ -779,6 +788,7 @@ function create_prop_canvas ( prop ) {
 var cache = {};
 //TODO setItem occared exceeded the quota.
 async function getImageFromURL ( url ) {
+  messages.innerHTML += 'Loading ' + url + '...<br>';
   //var date = localStorage.getItem('date');
   var date = cache['date'];
   var current = new Date().getTime();
@@ -817,6 +827,7 @@ function __getImageFromURL ( url ) {
 }
 
 async function create_character_canvas(charName) {
+  messages.innerHTML += 'Creating character card of ' + charName + '...<br>';
   let canvas = document.createElement('canvas');
   canvas.width  = 750;
   canvas.height = 640;
@@ -832,17 +843,6 @@ async function create_character_canvas(charName) {
     img.push(getImageFromURL( 'https://enka.network/ui/' + character.Skills[character.SkillOrder[i]] + '.png' ) );
   }
   // TODO How can I get character URL ?
-  //var charNameEn = loc["en"][characters[charNameHash[charName]].NameTextMapHash].split(' ');
-  //img.push(getImageFromURL('https://enka.network/ui/UI_Gacha_AvatarImg_' 
-  //                                 + charNameEn[charNameEn.length-1]
-  //                                   .replace('Thoma','Tohma')
-  //                                   .replace('Shogun','Shougun')
-  //                                   .replace('Tao','Hutao')
-  //                                   .replace('Yanfei','Feiyan')
-  //                                   .replace('Alhaitham','Alhatham')
-  //                                 + '.png'
-  //                        )
-  //        );
   img.push(getImageFromURL(build_card[charName].iconURL)); 
   for ( i=0; i<6; ++i ) {
     img.push(getImageFromURL( 'https://enka.network/ui/' + character.Consts[i] + '.png' ) );
@@ -920,6 +920,7 @@ async function create_character_canvas(charName) {
 }
 
 function create_artifactset_canvas ( artifactSet ) {
+  messages.innerHTML += 'Creating artifact set card...<br>';
   let canvas = document.createElement('canvas');
   canvas.width  = 465;
   canvas.height = 110;
@@ -958,6 +959,7 @@ function create_artifactset_canvas ( artifactSet ) {
 }
 
 function create_totalScore_canvas ( totalScore , calcBy) {
+  messages.innerHTML += 'Creating total score...<br>';
   let canvas = document.createElement('canvas');
   canvas.width  = 465;
   canvas.height = 290;
@@ -1043,6 +1045,7 @@ function getImageFromCanvas ( canvas ) {
 }
 
 async function create_build_card_canvas ( charName ) {
+  messages.innerHTML += 'Creating build card of ' + charName + '...<br>';
   let canvas = document.createElement('canvas');
   canvas.id = charName;
   canvas.onclick = (e) => {
@@ -1111,6 +1114,7 @@ async function create_build_card_canvas ( charName ) {
 
 //let uid = '851415193';
 function onload_function () {
+  messages = document.getElementById('messages');
   load_store_json('loc.json');
   load_store_json('characters.json');
   load_store_json('affixes.json');
