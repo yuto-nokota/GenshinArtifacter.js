@@ -877,7 +877,7 @@ async function create_character_canvas(charName) {
     context.fill();
     context.fillStyle = fillStyleOrg;
     context.drawImage(img[i],30,350+105*i,50,50);
-    context.font = '20px serif';
+    context.font = 'bold 20px serif';
     var fillStyleOrg = context.fillStyle;
     var skillLevel = build_card[charName]["天賦"][kindlist[i]].base
                    + build_card[charName]["天賦"][kindlist[i]].extra;
