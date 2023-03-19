@@ -14,12 +14,20 @@
 <body onload='onload_function()'>
 <header>
   <h1>Genshin Artifacter.js</h1>
-  <h2>
+  <h2></h2>
+  <hr>
+  <div> Font
+  <select id='font_common' name='font' onChange='change_font()'>
+    <option value='serif' selected >serif</option>
+    <option value='sans-serif'>sans-serif</option>
+  </select>
+  </div>
+  <div>UID <input type='text' id='uid'/><input type='button' onClick='setUid()' value='Go'/></div>
+  <hr>
 </header>
 <nav>
 </nav>
 <main>
-<div>UID <input type='text' id='uid'/><input type='button' onClick='setUid()' value='Go'/></div>
 <div id='main'></div>
 <hr>
 <div id='messages'></div>

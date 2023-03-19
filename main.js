@@ -1,6 +1,6 @@
 // Copyright (c) 2023 yuto-nokota. All rights reserved.
 let messages = null;
-const font_common = ' sans-serif ';
+let font_common = 'serif';
 var _GET = (function () {
   var vars = {}; 
   var param = location.search.substring(1).split('&');
@@ -255,9 +255,16 @@ function create_calcBySelectList ( charName ){
   return select;
 }
 
+function change_font() {
+  _GET['font'] = document.getElementById('font_common').value;
+  font_common = _GET['font'];
+  get2url();
+  print_build_card();
+}
+
 function setUid () {
   _GET['uid'] = document.getElementById('uid').value;
-  get2url ();
+  get2url();
   load_data(_GET['uid']);
 }
 
@@ -911,7 +918,7 @@ async function create_character_canvas(charName) {
   var lineWidthOrg = context.lineWidth;
   context.strokeStyle = 'rgba(' + [80,102,112,1.0] + ')';
   context.lineWidth = '8';
-  context.font = 'bold 60px ' + font_common
+  context.font = 'bold 60px sans-serif';
   context.textAlign = 'center';
   for ( i=build_card[charName]["凸"]; i<6; ++i ) {
     context.fillStyle = 'rgba(' + [0,0,0,0.3] + ')';
@@ -1129,6 +1136,8 @@ function onload_function () {
   load_store_json('loc.json');
   load_store_json('characters.json');
   load_store_json('affixes.json');
+  if ( _GET['font'] ) font_common = _GET['font'];
+  console.log(font_common);
   if ( !_GET['uid'] ) {
     _GET['uid'] = window.prompt('UID',"")
     get2url ();
